@@ -84,7 +84,7 @@ Onderzoek wat er gebeurt als JavaScript uit staat, het niet goed doet of wordt g
 
 
 
-## Deeltaak Performance Audit (12:00 uur)
+## Deeltaak Performance Audi
 
 Gebruik hiervoor de deeltaak, [Performance Audit](https://github.com/fdnd-task/performance-audit/).
 
