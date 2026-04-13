@@ -1,0 +1,47 @@
+{% render 'partials/head.liquid' %}
+
+<main class="login">
+    
+
+    <section>
+
+        {% render 'partials/general-heading.liquid',
+            heading_level: 1,
+            content: "Log in",
+        %}
+
+        <p>Log hier makkelijk in met jouw naam en wachtwoord</p>
+        <form action="/login" method="POST">
+                <label for="username">Naam</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    placeholder="Jouw naam" 
+                    required
+                > 
+            <button class="styled" type="submit">
+                Inloggen
+            </button>
+        </form>
+
+
+        
+        <article>
+
+            {% render 'partials/general-heading.liquid',
+                heading_level: 2,
+                content: "Of log in met",
+            %}
+            <button type="button">
+                Log in met Google
+            </button>
+            <button type="button">
+                Log in met Apple
+            </button>
+            <button type="button">
+                Log in met Microsoft
+            </button>
+        </article>
+    </section>
+</main>

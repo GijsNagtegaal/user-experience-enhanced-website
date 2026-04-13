@@ -1,0 +1,440 @@
+@font-face {
+    font-family: headings;
+    src: url(/assets/fonts/heading-font.woff2);
+}
+
+@font-face {
+    font-family: main;
+    src: url(/assets/fonts/main-font.woff2);
+}
+
+@font-face {
+    font-family: italic;
+    font-style: italic;
+    src: url(/assets/fonts/italic-font.woff2);
+} 
+
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-group(*) {
+    animation-duration: .3s;
+}
+
+::view-transition-old(root) {
+    animation: .3s ease-in both leave;
+}
+
+::view-transition-new(root) {
+    animation: .3s ease-in both enter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*) {
+        animation-duration: 0s;
+    }
+}  
+
+@keyframes leave {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateY(-0.625rem); }
+}
+
+@keyframes enter {
+    from { opacity: 0; transform: translateY(-0.625rem); }
+    to { opacity: 1; }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+    box-sizing: border-box;
+    font-family: main;
+    list-style: none;
+}
+
+img, video {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+}
+
+
+body {
+
+    color-scheme: light dark;
+    transition: background-color, color, .3s linear;
+
+
+    /* --------- font sizes --------- */
+    --paragraph: clamp(1.1rem, 2vw, 1.3rem);
+	--heading-small: clamp(1.2rem, 2vw, 1rem);
+	--heading-medium: clamp(1.4rem, 2.7vw, 2.2rem);
+	--heading-big: clamp(1.4rem, 3vw, 2.5rem);
+
+    /* --------- colors --------- */
+
+    /* zone colors */
+    --sierlint: #FFFFD3;
+    --voedseleiland: #9CB693;
+    --heuvel: #D4C8E2;
+    --waterplandgebied: #daf1fe;
+
+    /* transparent (50%) */
+    --sierlint-transparent: #ffffd36b;
+    --voedseleiland-transparent: #cfe1b936;
+    --heuvel-transparent: #d4c8e247;
+    --waterplandgebied-transparent: #daf1fe49;
+    
+
+    /* site wide colors */
+    --light-background: light-dark(#F7F7F7, hsl(0, 0%, 12%));
+    --medium-background: #a2a2a2;
+    --dark-background: light-dark(hsl(0, 0%, 12%), #F7F7F7);
+
+    --light-text: light-dark(#F7F7F7, #1a1a1a);
+    --dark-text: light-dark(#1a1a1a, #F7F7F7);
+    --body-background-green: #fe8b5038;
+
+    /* accents and borders */
+    --active: light-dark(#356c51, #356c51);
+    --active-link: light-dark(#356c51, #00c365);
+    --light-border:#F7F7F7;
+    --lighter-border:#B0B0B0;
+    --dark-border: light-dark(#1b1b1b,#F7F7F7);
+
+    /* --------- borders --------- */
+    --border-image: 1rem;
+    --border-popover: 1rem;
+    --border-card: .8rem;
+    --border-badge: 2rem;
+    --border-button: .5rem;
+    --border-round: 100%;
+
+    /* buttons */
+    --correct: #356c51;
+    --incorrect: #8F0000;
+    --questbutton: #356c51;
+
+    /* exclusions for light dark */
+    --always-black: hsl(0, 0%, 12%);
+    --always-light: #ffffff;
+
+    background-color: var(--light-background);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: headings;
+    font-weight: 600;
+    font-size: var(--heading-big);
+    color: var(--dark-text);
+}
+
+h3, h4 {
+    font-size: var(--heading-medium);
+}
+
+h5, h6 {
+    font-size: var(--heading-small);
+}
+
+h3.italic {
+    font-family: italic;
+    font-weight: 400;
+    font-size: var(--paragraph);
+}
+
+p,a,button {
+    font-family: main;
+    font-weight: 400;
+    font-size: var(--paragraph);
+    color: var(--dark-text);
+    text-decoration: none;
+}
+
+p.italic {
+    font-family: italic;
+    font-weight: 400;
+}
+
+svg.decorative {
+    width: 1.5625rem;
+    height: 1.5625rem;
+    color: var(--dark-text);
+    fill: var(--dark-text);
+
+    path {
+        color: var(--dark-text);
+        fill: var(--dark-text);
+    }
+}
+
+/* margin for all pages but veldverkenner */
+main:not(.veldverkenner) {
+    margin: 1rem;
+}
+
+/* link styling global */
+
+/* general link button look */
+.styled {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: .5rem;
+    height: 2.5rem;
+    border-radius: 0.625rem;
+    color: var(--dark-text);
+    transition: scale, translate, .4s;
+
+    &:hover {
+        transform: 
+            scale(1.06)
+        ;
+        
+    } 
+
+    &:active {
+        animation-name: hoverbutton;
+        animation-duration: .4s;
+        animation-iteration-count: 1;
+        animation-timing-function: ease-in-out;
+    }
+
+    &:focus-visible {
+
+    }
+
+    /* filled link button look */
+    &.primary {
+        background-color: var(--dark-background);
+        color: var(--light-text);
+    }
+    
+    /* outlined link button look */
+    &.secondary {
+        background-color: transparent;
+        border: var(--dark-border) 2px solid;
+        
+    }
+
+    &.margin {
+        margin-block: 1rem;
+    }
+
+    /* finished link button look */
+    &.klaar {
+        background-color: var(--questbutton);
+        color: var(--light-text);
+    }
+
+    &.quest {
+        background-color: var(--questbutton);
+        color: white;
+        justify-content: flex-start;
+        min-height: 3rem;
+    }
+
+    &.logout {
+        background-color: var(--incorrect);
+        width: 100%;
+        border: none;
+    }
+
+
+    &.reset {
+        background-color: transparent;
+        border: 2px solid var(--incorrect);
+        width: 100%;
+    }
+
+    &.start {
+        margin-block: 1rem;
+    }
+
+    &.awnser {
+        background-color: transparent;
+        border: 2px solid var(--dark-border);
+    }
+}
+
+a.back {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .5rem;
+    color: var(--dark-text);
+    margin-block: 1rem;
+    width: fit-content;
+    
+    &.blacklink {
+        color: var(--always-dark);
+
+        svg {
+            fill: var(--always-dark);
+            
+            path {
+                fill: var(--always-dark);
+            }
+        }
+    }
+}
+
+span.bold {
+    font-family: headings;
+}
+
+.badge {
+    width: fit-content;
+    border-radius: var(--border-badge);
+    border: 1px solid var(--always-black);
+    padding: .4rem;
+}
+
+.notext {
+    border: 0;
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px ;
+	overflow: hidden;
+	padding: 0;
+	width: 1px;
+	white-space: nowrap;
+}
+
+/* zone styling colors */
+
+.sierlint {
+
+    background-color: var(--sierlint);
+
+    &::-webkit-progress-value { 
+        background-color: var(--sierlint); 
+    }
+
+    .breadcrumbs {
+        --light-text: #1a1a1a;
+        --dark-text: #1a1a1a;
+    }
+}
+
+.voedseleiland {
+    --questbutton: #D89075;
+
+    background-color: var(--voedseleiland);
+
+
+}
+
+.heuvel {
+    background-color: var(--heuvel);
+}
+
+.waterplandgebied {
+    background-color: var(--waterplandgebied);
+}
+
+/* progress bar styling */
+
+progress {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 1.25rem;
+    background-color: transparent;
+
+    &::-webkit-progress-value {
+        background-color: black;
+        border-radius: 10px;
+    }
+
+    &::-moz-progress-bar {
+        border-radius: 10px;
+        background-color: rgba(0,0,0,0.6);
+    }
+
+    &::-webkit-progress-bar {
+        background-color: #00000041;
+        border-radius: 10px;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    }
+}
+
+.empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    height: fit-content;
+    padding: 1rem;
+
+    li {
+        p {
+            text-align: left;
+        }
+    }
+}
+
+.separator {
+    margin-inline: .5rem;
+    font-size: var(--paragraph);
+    color: var(--dark-text);
+}
+
+/* images */
+
+img.square {
+    object-fit: cover;
+    object-position: center;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--border-image);
+}
+
+img.round {
+    object-fit: cover;
+    object-position: center;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--border-round);
+}
+
+
+img.landscape {
+    object-fit: cover;
+    object-position: center;
+    aspect-ratio: 2 / 1;
+    max-height: 12.5rem;
+    border-radius: var(--border-image);
+}
+
+img.portrait {
+    object-fit: cover;
+    aspect-ratio: 1/1.3;
+    border-radius: .5rem;
+    max-width: 12.5rem;
+    border-radius: var(--border-image);
+}
+
+@keyframes reveal-sideways {
+    from { 
+        opacity: 0; 
+        transform: translateX(2rem) scale(0.8);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes reveal-topdown {
+    from { 
+        opacity: 0; 
+        transform: translateY(2rem) scale(0.8);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+    }
+}

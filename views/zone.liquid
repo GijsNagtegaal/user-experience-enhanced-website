@@ -1,0 +1,38 @@
+{% render 'partials/head.liquid' 
+    zone_type: zone.type,
+%}
+
+{% render 'partials/zone-header.liquid', 
+    plants: zone.plants, 
+    zone_type: zone.type, 
+    zone_name: zone.name,
+    zone_slug: zone_slug,
+    current_path: current_path,
+    stats: stats,
+%}
+
+<main class="zone">
+    {% assign active_quests = plants | where: "collected", false %}
+
+    <section>
+        {% render 'partials/general-heading.liquid',
+            heading_level: 2,
+            content: "Opdrachten",
+        %}
+        {% render 'partials/questlist.liquid', 
+            zone_slug: zone_slug,
+            zone_type: zone.type, 
+            plants: plants
+        %}
+    </section>
+
+    <section>
+        {% render 'partials/flowerlist.liquid', 
+            plants: plants, 
+            zone_type: zone.type, 
+            zone_slug: zone_slug,
+            allPlants: allPlants
+        %}
+    </section>
+</main>
+{% render 'partials/foot.liquid', current_path: current_path %}
