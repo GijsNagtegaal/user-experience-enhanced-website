@@ -733,9 +733,21 @@ acccount page
 ***********************************/
 
 main.login {
+
     section {
-        color: var(--always-light);
+        color: var(--dark-text);
+
+        h1 {
+            font-size: 3rem;
+        }
         
+        p {
+            color: var(--dark-text);
+        }
+
+        p:nth-of-type(2) {
+            text-align: center;
+        }
 
         form {
             display: flex;
@@ -747,7 +759,7 @@ main.login {
         }
 
         label {
-            color: var(--always-light);
+            color: inherit;
             font-size: 1rem;
         }
 
@@ -759,7 +771,7 @@ main.login {
             padding-left: 1rem;
             background-color: var(--light-background);
             color: var(--dark-text);
-            border: 1px solid var(--light-border);
+            border: 1px solid var(--dark-border);
             font-size: 1rem;
 
             input::placeholder {
@@ -769,20 +781,12 @@ main.login {
         }
 
         button {
-            border: 1px solid var(--always-light);
+            border: 1px solid var(--dark-border);
             background-color: var(--active);
             width: 100%;
             height: 3.5rem;
             border-radius: var(--border-button);
-            color: inherit;
-        }
-
-        article {
-            display: flex;
-            flex-direction: column;
-            height: 45dvh;
-            justify-content: space-around;
-            color: inherit;
+            color: var(--always-light);
         }
 
         h1, h2 {
@@ -801,22 +805,6 @@ body:has(.main-footer) {
     main:not(.veldverkenner) {
         margin-bottom: 15dvh;
     }
-}
-
-html:has(main.login) {
-
-    body {
-        background-color: transparent;
-    }
-
-    min-height: 100dvh;
-
-    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.7)), 
-        url("/assets/images/leafs.webp");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover; 
-
 }
 
 /* dot navigation for the welcome page */

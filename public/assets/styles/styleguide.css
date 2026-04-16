@@ -286,6 +286,11 @@ span.bold {
     font-family: headings;
 }
 
+.link {
+    text-decoration: underline;
+    color: var(--active-link);
+}
+
 .badge {
     width: fit-content;
     border-radius: var(--border-badge);

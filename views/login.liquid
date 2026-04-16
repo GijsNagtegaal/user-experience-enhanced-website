@@ -7,10 +7,10 @@
 
         {% render 'partials/general-heading.liquid',
             heading_level: 1,
-            content: "Log in",
+            content: "Welkom!",
         %}
 
-        <p>Log hier makkelijk in met jouw naam en wachtwoord</p>
+        <p>Hieronder kan je makkelijk inloggen</p>
         <form action="/login" method="POST">
                 <label for="username">Naam</label>
                 <input 
@@ -24,24 +24,6 @@
                 Inloggen
             </button>
         </form>
-
-
-        
-        <article>
-
-            {% render 'partials/general-heading.liquid',
-                heading_level: 2,
-                content: "Of log in met",
-            %}
-            <button type="button">
-                Log in met Google
-            </button>
-            <button type="button">
-                Log in met Apple
-            </button>
-            <button type="button">
-                Log in met Microsoft
-            </button>
-        </article>
+        <p>Heb je nog geen account?<a href="/signup" class="link"> Meld je aan</p>
     </section>
 </main>
