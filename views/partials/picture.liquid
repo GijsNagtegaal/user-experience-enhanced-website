@@ -1,0 +1,9 @@
+{% comment %}
+This is a partial to load all images in better sizes and better quality
+{% endcomment %}
+
+<picture>
+    <source srcset="{{ imagesrc }}?width={{ width }}&height={{ height }}&format=avif&quality=60" fetchpriority="{{ fetch }}" alt="">
+    <source srcset="{{ imagesrc }}?width={{ width }}&height={{ height }}&format=webp&quality=60" fetchpriority="{{ fetch }}" alt="">
+    <img class="{{ class }}" src="{{ imagesrc }}" fetchpriority="{{ fetch }}" alt="">
+</picture>

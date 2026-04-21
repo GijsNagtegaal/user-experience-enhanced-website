@@ -14,7 +14,14 @@
                     <h2>{{ plant.name }}</h2>
                     <h3 class="italic">{{ plant.latin | truncate: 20 }}</h3>
                 </article>
-                <img class="square" src="{{ plant.in_bloom }}?width=360&height=360&quality=70" width="400" height="400" alt="{{ plant.name }}" fetchpriority=high loading="{% if current_path == "/" %}eager{% else %}lazy{% endif %}" >
+                {% render 'partials/picture.liquid',
+                    imagesrc: plant.in_bloom,
+                    width: "180",
+                    height: "180",
+                    alt: plant.name,
+                    class: "square",
+                    fetch: "high"
+                %}      
             </a>    
         </li>
         {% endfor %}

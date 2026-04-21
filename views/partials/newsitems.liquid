@@ -9,7 +9,14 @@
                     content: newsitem.title | truncate: 20
                 %}
             </div>
-            <img class="landscape" src="{{ newsitem.image }}?width=300&height=150&quality=70" width="300" height="150" alt="{{ newsitem.title }}">
+            {% render 'partials/picture.liquid',
+                imagesrc: newsitem.image,
+                width: "275",
+                height: "140",
+                alt: newsitem.title,
+                class: "landscape",
+
+            %}
             {% if current_path == '/' %}
                 <p>{{ newsitem.body | truncate: 40 }}</p>
         {% endif %}
