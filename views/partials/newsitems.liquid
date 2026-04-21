@@ -9,12 +9,23 @@
                     content: newsitem.title | truncate: 20
                 %}
             </div>
+
+            {% if current_path != '/' %}
+                {% assign loading = "eager" %}
+                {% assign fetch = "high" %}
+            {% else %}
+                {% assign loading = "lazy" %}
+                {% assign fetch = "low" %}
+            {% endif %}
+
             {% render 'partials/picture.liquid',
                 imagesrc: newsitem.image,
                 width: "275",
                 height: "140",
                 alt: newsitem.title,
                 class: "landscape",
+                fetch: fetch,
+                loading: loading,
 
             %}
             {% if current_path == '/' %}

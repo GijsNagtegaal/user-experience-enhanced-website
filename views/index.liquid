@@ -45,7 +45,15 @@
             %}  
         </div>
         <p>Ben jij ready voor een uitdaging? Op onze veldverkenner doe jij leuke opdrachten en leer je wat bij over het groen in ons park.</p>
-        <img class="landscape" src="/assets/images/map-image.webp" alt="our veldverkenner map">
+        {% render 'partials/picture.liquid',
+            imagesrc: "/assets/images/map-image",
+            width: "275",
+            height: "140",
+            alt: "Een kaart van de veldverkenner",
+            class: "landscape",
+            fetch: "auto",
+            loading: "lazy",
+        %}
         <a class="styled secondary margin" href="/veldverkenner">Naar onze veldverkenner</a>
     </section>
     {% comment %} section with news overview {% endcomment %}
