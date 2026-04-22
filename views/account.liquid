@@ -12,7 +12,17 @@
     %}
     <section>
         <figure>
-            <img class="memoji" src="{{ chosen.memoji }} /assets/images/profil.webp" alt="">
+                {% render 'partials/picture.liquid',
+                    imagesrc: chosen.memoji,
+                    width: "150",
+                    height: "150",
+                    alt: plant.name,
+                    class: "memoji",
+                    fetch: "high",
+                    loading: "eager",
+                    view-transition: hoihoi,
+                    view-transition-class: hoidoei,
+                %}
         </figure>
         <article>
             

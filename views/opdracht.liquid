@@ -94,13 +94,15 @@
                     {% if quest.options and quest.options.size > 0 %}
                     {% for option in quest.options %}
                         {% if quest.type == 'button' %}
-                            <a href="?step={% if option.value == quest.correct_answer %}correct{% else %}incorrect{% endif %}" class="styled awnser">
+                            <button class="{% if option.value == quest.correct_answer %}correct{% else %}incorrect{% endif %} styled awnser"
+                                data-url="?step={% if option.value == quest.correct_answer %}correct{% else %}incorrect{% endif %}">
                                 {{ option.text }}
-                            </a>
+                            </button>
                         {% elsif quest.type == 'image' %}
-                            <a href="?step={% if option.value == quest.correct_answer %}correct{% else %}incorrect{% endif %}" class="quiz-image">
+                            <button class="{% if option.value == quest.correct_answer %}correct{% else %}incorrect{% endif %} quiz-image"
+                                data-url="?step={% if option.value == quest.correct_answer %}correct{% else %}incorrect{% endif %}">
                                 <img class="landscape" src="{{ option.image_url }}" alt="{{ option.text | default: 'Optie' }} {{ forloop.index }}">
-                            </a>
+                            </button>
                         {% endif %}
                     {% endfor %}
                     {% else %}
@@ -108,6 +110,11 @@
                         <a href="?step=incorrect" class="styled awnser">Ga terug</a>
                     {% endif %}
                 </article>
+
+                <a href="#" class="styled loader">
+                    Dit is mijn antwoord
+                </a>
+
             </section>
         {% when 'correct' %}
             <section class="correct">
@@ -159,13 +166,33 @@
                         </button>
                     </form>
                 </article>
-                <img class="plant-animated" src="/assets/images/alium.webp" alt="alium">
+                {% render 'partials/picture.liquid',
+                    imagesrc: "/assets/images/alium",
+                    width: "150",
+                    height: "150",
+                    alt: "Hoi",
+                    class: "",
+                    fetch: "auto",
+                    loading: "lazy",
+                    view-transition: hoihoi,
+                    view-transition-class: hoidoei,
+                %}
             </section>
 
         {% when 'incorrect' %}
             <section class="incorrect">
                 <article class="result incorrect">
-                    <img src="/assets/images/foutje.webp" alt="falling leaves">
+                    {% render 'partials/picture.liquid',
+                        imagesrc: "/assets/images/foutje",
+                        width: "150",
+                        height: "150",
+                        alt: "Hoi",
+                        class: "memoji",
+                        fetch: "auto",
+                        loading: "lazy",
+                        view-transition: hoihoi,
+                        view-transition-class: hoidoei,
+                    %}
 
                     {% render 'partials/general-heading.liquid',
                         heading_level: 1,
