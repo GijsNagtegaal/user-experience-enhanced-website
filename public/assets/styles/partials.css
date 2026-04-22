@@ -98,7 +98,8 @@ ul.flowerlist {
     gap: 1rem;
 
     li {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         align-items: flex-end;
         justify-content: flex-start;
         width: 100%;
@@ -118,8 +119,6 @@ ul.flowerlist {
 
     img {
         display: flex;
-        width: fit-content;
-        max-width: 42%;
         border-radius: .5rem 0 0 .5rem;
     }
 
@@ -132,6 +131,7 @@ ul.flowerlist {
     article {
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         height: 100%;
         width: 100%;
         
