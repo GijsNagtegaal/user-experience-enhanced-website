@@ -208,7 +208,13 @@ app.get('/veldverkenner/:zone_slug/:item_slug', async (request, response) => {
             fetchData(`frankendael_plants?filter[slug][_eq]=${request.params.item_slug}&fields=*.*`)
         ]);
         const plant = normalizePlant(plantData[0]);
-        response.render('opdracht.liquid', { quest: plant, plant, zone: zoneData[0], zone_slug: request.params.zone_slug, state: request.query.step || 'intro', user_id: userId, zone_type: zoneData[0].type, current_path: request.path });
+        response.render('opdracht.liquid', { 
+            quest: plant, plant, 
+            zone: zoneData[0], 
+            zone_slug: request.params.zone_slug, 
+            state: request.query.step || 'intro', user_id: userId, 
+            zone_type: zoneData[0].type, 
+            current_path: request.path });
     } catch (error) { response.status(500).send("Quest error"); }
 });
 

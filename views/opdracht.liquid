@@ -14,7 +14,7 @@
                     heading_level: 1,
                     content: full_title,
                 %}
-                                <article class="mapwrapper">
+                <article class="mapwrapper">
                     <svg viewBox="0 0 354 115" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <g clip-path="url(#clip0_588_1362)">
                             <path d="M0 0C116.82 0 233.64 0 354 0C354 37.9454 354 75.8908 354 114.986C237.18 114.986 120.36 114.986 0 114.986C0 77.0407 0 39.0953 0 0Z" fill="#030504"/>
@@ -75,6 +75,19 @@
                     content: quest.title,
                 %}
 
+                {% render 'partials/picture.liquid',
+                    imagesrc: plant.in_bloom,
+                    width: "375",
+                    height: "175",
+                    alt: plant.name,
+                    class: "landscape",
+                    fetch: "high",
+                    loading: "eager",
+                    view-transition: hoihoi,
+                    view-transition-class: hoidoei,
+
+                %}
+
                 <p>{{ quest.description }}</p>
                 
                 <article class="options-container">
@@ -86,7 +99,7 @@
                             </a>
                         {% elsif quest.type == 'image' %}
                             <a href="?step={% if option.value == quest.correct_answer %}correct{% else %}incorrect{% endif %}" class="quiz-image">
-                                <img class="landscape" src="{{ option.image_url | default: '/assets/images/placeholder.webp' }}" alt="{{ option.text | default: 'Optie' }} {{ forloop.index }}">
+                                <img class="landscape" src="{{ option.image_url }}" alt="{{ option.text | default: 'Optie' }} {{ forloop.index }}">
                             </a>
                         {% endif %}
                     {% endfor %}
@@ -108,13 +121,32 @@
                         content:"Helemaal goed! 🎉",
                         class: "bigheading",
                     %}
+
+                    {% render 'partials/picture.liquid',
+                        imagesrc: plant.in_bloom,
+                        width: "150",
+                        height: "150",
+                        alt: plant.name,
+                        class: "round",
+                        fetch: "high",
+                        loading: "eager",
+                        view-transition: hoihoi,
+                        view-transition-class: hoidoei,
+                    %}
+
                     <p>Je bent een echte natuur kenner! Goed gedaan</p>
+
+                    {% if age < 28 %}
+                        
+                    {% endif %}
+
                     <p>
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M10.0001 1.66675L12.5751 6.88341L18.3334 7.72508L14.1667 11.7834L15.1501 17.5167L10.0001 14.8084L4.85008 17.5167L5.83341 11.7834L1.66675 7.72508L7.42508 6.88341L10.0001 1.66675Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         +{{plant.xp}} xp
                     </p>
+
                     <form class="collectbutton" action="/veldverkenner/{{ zone_slug }}/{{ quest.slug }}" method="POST">
                         <input type="hidden" name="user_id" value="{{ user_id }}">
                         <input type="hidden" name="plant_id" value="{{ quest.id }}">
