@@ -9,7 +9,16 @@
         content: title,
     %}
 
-    <img class="landscape" src="{{ image }}" alt="">
+    {% render 'partials/picture.liquid',
+        imagesrc: image,
+        width: "375",
+        height: "175",
+        alt: plant.name,
+        class: "landscape",
+        fetch: "high",
+        loading: "eager",
+    %}
+
     {% if date %}
         <p class="date"> Geplaatst op {{ date }}</p>
     {% endif %}
