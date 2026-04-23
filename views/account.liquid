@@ -30,28 +30,17 @@
                 heading_level: 2,
                 content: user.name,
             %}
-            
-            {% assign current_date = "now" | date: "%Y%m%d" %}
-            {% assign birth_date = user.birthdate | date: "%Y%m%d" %}
 
-            {% comment %} Calculate the difference between current year and birth year which comes to the age {% endcomment %}
-            {% assign current_year = "now" | date: "%Y" %}
-            {% assign birth_year = user.birthdate | date: "%Y" %}
-            {% assign age = current_year | minus: birth_year %}
+            {% include 'partials/calcs.liquid', 
+                birthdate: user.birthdate 
+            %}
 
-            {% comment %} 
-            Check if the birth date is greater than the current date.
-            if it is do -1 because they cannot party yet :)
-            {% endcomment %}
-
-            {% assign current_md = "now" | date: "%m%d" %}
-            {% assign birth_md = user.birthdate | date: "%m%d" %}
-
-            {% if birth_md > current_md %}
-            {% assign age = age | minus: 1 %}
+            <p>Leeftijd: {{ age }}</p>
+            {% if age >= "25" %}
+                <p>Ik weet niet wat xp is</p>
+            {% else %}
+                <p>Ik weet wel wat xp is</p>
             {% endif %}
-
-            <p>Age: {{ age }}</p>
 
             {% assign totalplantstext = "🪴 " | append: total_plants | append: " Planten verzameld" %}
 

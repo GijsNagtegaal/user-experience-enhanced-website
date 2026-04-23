@@ -1,0 +1,17 @@
+{% assign current_date_int = "now" | date: "%Y%m%d" | plus: 0 %}
+{% assign birth_date_int = user.birthdate | date: "%Y%m%d" | plus: 0 %}
+
+{% comment %} Basic year subtraction {% endcomment %}
+{% assign current_year = "now" | date: "%Y" | plus: 0 %}
+{% assign birth_year = user.birthdate | date: "%Y" | plus: 0 %}
+{% assign age = current_year | minus: birth_year %}
+
+{% comment %} 
+Adjust age if the birthday hasn't happened yet this year 
+{% endcomment %}
+{% assign current_md = "now" | date: "%m%d" | plus: 0 %}
+{% assign birth_md = user.birthdate | date: "%m%d" | plus: 0 %}
+
+{% if birth_md > current_md %}
+    {% assign age = age | minus: 1 %}
+{% endif %}
