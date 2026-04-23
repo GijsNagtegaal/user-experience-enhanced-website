@@ -391,6 +391,7 @@ quest page
 ***********************************/
 
 main.quest {
+
     position: relative;
 
     section {
@@ -533,6 +534,7 @@ main.quest {
             z-index: 9999;
             pointer-events: none;
             transform-origin: center center;
+            view-transition-name: plant-image;
         }
     }
 
@@ -910,6 +912,24 @@ footer.main-footer {
                 animation-duration: .4s;
                 animation-timing-function: ease-in;
                 animation-delay: 1.3s;
+            }
+        }
+
+        li:last-child a {
+            position: relative;
+
+            &.has-new::after {
+                content: '';
+                position: absolute;
+                top: -2px;  
+                right: -2px;
+                width: 10px;
+                height: 10px;
+                background-color: red;
+                border-radius: 50%;
+                border: 2px solid var(--light-background);
+                pointer-events: none;
+                z-index: 10;
             }
         }
     }

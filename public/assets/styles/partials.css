@@ -285,6 +285,7 @@ ul.my-collection {
     a {
         display: flex;
         flex-direction: column;
+        width: 100%;
         color: inherit;
     }
 
@@ -302,6 +303,8 @@ ul.my-collection {
     }
     
     img {
+        width: 100%;
+        height: 100%;
         border-radius: 0 0 var(--border-card) var(--border-card);
     }
 }
@@ -365,10 +368,10 @@ ul.quest {
         padding-inline: .7rem;
         border-radius: 0 0 var(--border-button) var(--border-button);
         color: white;
+    }
 
-        svg {
-
-        }
+    p {
+        color: var(--always-black)
     }
 }
 
@@ -421,7 +424,14 @@ section.detailpage {
     display: flex;
     margin-block: 1rem;
 
+
+    ul.zone.breadcrumbs {
+        --dark-text: var(--always-black);
+    }
+
     ul.breadcrumbs {
+
+        
         display: flex;
         justify-content: center;
         align-items: center;

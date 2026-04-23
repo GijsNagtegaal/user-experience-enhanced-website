@@ -242,6 +242,7 @@ main:not(.veldverkenner) {
         svg {
             path {
                 stroke: var(--always-black);
+                fill: transparent;
             }
         }
     }
