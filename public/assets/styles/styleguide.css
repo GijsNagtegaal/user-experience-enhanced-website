@@ -80,8 +80,8 @@ body {
     /* --------- colors --------- */
 
     /* zone colors */
-    --sierlint: #FFFFD3;
-    --voedseleiland: #9CB693;
+    --sierlint: #FFFBEA;
+    --voedseleiland: #D8E4D3;
     --heuvel: #D4C8E2;
     --waterplandgebied: #daf1fe;
 
@@ -119,7 +119,7 @@ body {
     /* buttons */
     --correct: #356c51;
     --incorrect: #8F0000;
-    --questbutton: #356c51;
+    --questbutton: #EAB8A2;
 
     /* exclusions for light dark */
     --always-black: hsl(0, 0%, 12%);
@@ -235,9 +235,15 @@ main:not(.veldverkenner) {
 
     &.quest {
         background-color: var(--questbutton);
-        color: white;
+        color: var(--always-black);
         justify-content: flex-start;
         min-height: 3rem;
+
+        svg {
+            path {
+                stroke: var(--always-black);
+            }
+        }
     }
 
     &.logout {
@@ -364,7 +370,7 @@ span.bold {
 }
 
 .voedseleiland {
-    --questbutton: #D89075;
+    
 
     background-color: var(--voedseleiland);
 

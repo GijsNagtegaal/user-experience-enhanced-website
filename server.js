@@ -25,7 +25,7 @@ app.set('view engine', 'liquid');
  * Gets the ID from the cookie, or defaults to 4 if not logged in
  */
 const getActiveUserId = (request) => {
-    return request.cookies.userId ? parseInt(request.cookies.userId, 10) : 4;
+    return request.cookies.userId ? parseInt(request.cookies.userId, 10) : 9;
 };
 
 const fetchData = async (endpoint) => {

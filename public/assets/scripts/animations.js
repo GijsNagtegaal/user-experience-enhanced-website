@@ -28,33 +28,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function initCollectAnimation(form) {
-    const plant = document.querySelector('.plant-animated');
+    // The hidden image that will do the flying
+    const animatedPlant = document.querySelector('.plant-animated');
+    // The static image at the top of the 'correct' section
+    const sourceImage = document.querySelector('.result.success figure img');
+    // The target icon in your header/navigation
     const plantIcon = document.querySelector('.collection-icon');
-    if (!plant || !plantIcon) return;
+
+    if (!animatedPlant || !sourceImage || !plantIcon) return;
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         
+        const startRect = sourceImage.getBoundingClientRect();
         const iconRect = plantIcon.getBoundingClientRect();
-        const plantRect = plant.getBoundingClientRect();
-        const targetX = iconRect.left + (iconRect.width / 2) - (plantRect.width / 2);
-        const targetY = iconRect.top + (iconRect.height / 2) - (plantRect.height / 2);
 
-        gsap.set(plant, { 
-            display: "block", position: "fixed", top: 0, left: 0,
-            x: -plantRect.width - 50, y: window.innerHeight / 2, 
-            opacity: .6, scale: 1.6, visibility: "visible"
+        const targetX = iconRect.left + (iconRect.width / 2) - (startRect.width / 2);
+        const targetY = iconRect.top + (iconRect.height / 2) - (startRect.height / 2);
+
+        gsap.set(animatedPlant, { 
+            display: "block", 
+            position: "fixed", 
+            top: 0, 
+            left: 0,
+            x: startRect.left, 
+            y: startRect.top, 
+            width: startRect.width,
+            height: startRect.height,
+            opacity: 1, 
+            scale: 1, 
+            visibility: "visible",
+            borderRadius: "50%" 
         });
 
-        gsap.to(plant, {
-            duration: 1.2, opacity: 1, scale: 0.2, rotation: 45, ease: "power2.inOut",
+        gsap.to(animatedPlant, {
+            duration: 1.2, 
+            opacity: 0.5, 
+            scale: 0.1, 
+            rotation: 720,
+            ease: "power2.inOut",
             motionPath: {
-                path: [{ x: window.innerWidth / 3, y: -100 }, { x: targetX, y: targetY }],
-                curviness: 1.5
+                path: [
+                    { x: startRect.left - 100, y: startRect.top - 50 }, 
+                    { x: targetX, y: targetY }
+                ],
+                curviness: 2
             },
             onComplete: () => {
+                // Success pop on the icon
                 gsap.to(plantIcon, {
-                    scale: 1.4, duration: 0.15, yoyo: true, repeat: 1, ease: "back.out(2)",
+                    scale: 1.5, 
+                    duration: 0.2, 
+                    yoyo: true, 
+                    repeat: 1, 
+                    ease: "back.out(1.7)",
                     onComplete: () => form.submit()
                 });
             }

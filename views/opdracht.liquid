@@ -181,24 +181,26 @@
 
         {% when 'incorrect' %}
             <section class="incorrect">
+                {% render 'partials/general-heading.liquid',
+                    heading_level: 1,
+                    content:"Helaas, dat is niet goed"
+                %}
+
                 <article class="result incorrect">
+
                     {% render 'partials/picture.liquid',
                         imagesrc: "/assets/images/foutje",
-                        width: "150",
-                        height: "150",
+                        width: "350",
+                        height: "350",
                         alt: "Hoi",
-                        class: "memoji",
+                        class: "",
                         fetch: "auto",
                         loading: "lazy",
                         view-transition: hoihoi,
                         view-transition-class: hoidoei,
                     %}
 
-                    {% render 'partials/general-heading.liquid',
-                        heading_level: 1,
-                        content:"Helaas, dat is niet goed",
-                        class: "bigheading",
-                    %}
+
                     <p>Probeer het gerust nog een keer! (zonder google)</p>
                     <a href="?step=start" class="styled quest">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -207,7 +209,7 @@
                         </svg>
                         Probeer het opnieuw
                     </a>
-                    <a class="secondary" href="/veldverkenner">Ik kom later terug</a>
+                    <a class="secondary" href="/veldverkenner">Terug naar de veldverkenner</a>
                 </article>
                 <canvas id="leafCanvas"></canvas>
             </section>
