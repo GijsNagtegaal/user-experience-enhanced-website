@@ -1,6 +1,5 @@
 const loaderBtn = document.querySelector('.loader');
 const allOptions = document.querySelectorAll('.options-container button');
-let timer;
 
 const triggerAnimation = (event) => {
 

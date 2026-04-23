@@ -446,11 +446,36 @@ main.quest {
             align-items: center;
             justify-content: center;
 
+            figure {
+                position: relative;
+                width: 10rem;
+                height: 10rem;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                }
+
+                .overlay {
+                    display: block;
+                    width: 10rem;
+                    height: 10rem;
+                    position: absolute;
+                    background-color: rgba(0, 0, 0, 0.6);
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    border-radius: var(--border-round);
+                }
+            }
+
             svg.check {
-                width: 8rem;
-                height: 8rem;
-                background-color: var(--questbutton);
-                padding: 2rem;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 5rem;
+                height: 5rem;
                 border-radius: var(--border-round);
 
                 path {
