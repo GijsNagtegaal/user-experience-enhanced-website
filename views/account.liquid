@@ -10,7 +10,8 @@
         heading_level: 1,
         content: welcome_message,
     %}
-    <section>
+
+    <section class="user-data">
         <figure>
                 {% render 'partials/picture.liquid',
                     imagesrc: chosen.memoji,
@@ -23,6 +24,47 @@
                     view-transition: hoihoi,
                     view-transition-class: hoidoei,
                 %}
+                <button popovertarget="profiselector">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 19H6.425L16.2 9.225L14.775 7.8L5 17.575V19ZM3 21V16.75L16.2 3.575C16.4 3.39167 16.6208 3.25 16.8625 3.15C17.1042 3.05 17.3583 3 17.625 3C17.8917 3 18.15 3.05 18.4 3.15C18.65 3.25 18.8667 3.4 19.05 3.6L20.425 5C20.625 5.18333 20.7708 5.4 20.8625 5.65C20.9542 5.9 21 6.15 21 6.4C21 6.66667 20.9542 6.92083 20.8625 7.1625C20.7708 7.40417 20.625 7.625 20.425 7.825L7.25 21H3ZM15.475 8.525L14.775 7.8L16.2 9.225L15.475 8.525Z" fill="#1D1B20"/>
+                    </svg>
+                </button>
+                <section popover="profiselector" id="profiselector">
+                    <header>
+                        {% render 'partials/general-heading.liquid',
+                            heading_level: 3,
+                            content: "Kies jouw profielfoto",
+                        %}
+                        <button popovertarget="profiselector">
+                            <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.2663 36.4167L9.58301 33.7334L20.3163 23L9.58301 12.2667L12.2663 9.58337L22.9997 20.3167L33.733 9.58337L36.4163 12.2667L25.683 23L36.4163 33.7334L33.733 36.4167L22.9997 25.6834L12.2663 36.4167Z" fill="#1D1B20"/>
+                            </svg>
+                            Sluiten
+                        </button>
+                    </header>
+                    <article>
+                        <ul>
+                            {% for memoji in memojis %}
+                                <li>
+                                    {% render 'partials/picture.liquid',
+                                        imagesrc: user.memoji,
+                                        width: "150",
+                                        height: "150",
+                                        alt: "Blue eyes black hair",
+                                        class: "memoji",
+                                        fetch: "high",
+                                        loading: "eager",
+                                        view-transition: hoihoi,
+                                        view-transition-class: hoidoei,
+                                    %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+                    <footer>
+
+                    </footer>
+                </section>
         </figure>
         <article>
             

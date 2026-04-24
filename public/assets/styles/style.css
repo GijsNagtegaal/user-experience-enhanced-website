@@ -702,7 +702,7 @@ main.acccount {
         margin-block: 2rem;
     }
 
-    section:nth-of-type(1) {
+    section.user-data {
         display: flex;
         gap: 1rem;
         width: 100%;
