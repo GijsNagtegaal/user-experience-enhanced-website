@@ -3,313 +3,489 @@ import { Liquid } from 'liquidjs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import cookieParser from 'cookie-parser';
+import methodOverride from 'method-override';
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+
+const API_BASE = 'https://fdnd-agency.directus.app/items';
+const PLACEHOLDER_IMAGE = '/assets/images/placeholder.webp';
+const DEFAULT_USER_ID = 9;
+
+// ─── APP SETUP ────────────────────────────────────────────────────────────────
 
 const app = express();
-const API_BASE = 'https://fdnd-agency.directus.app/items';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// --- APP SETUP ---
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use(methodOverride('_method'));
+app.use('/gsap', express.static(path.join(__dirname, 'node_modules/gsap/dist/')));
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const engine = new Liquid();
 app.engine('liquid', engine.express());
 app.set('views', './views');
 app.set('view engine', 'liquid');
 
-// --- HELPERS ---
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 /**
- * Gets the ID from the cookie, or defaults to 4 if not logged in
+ * Get the active user's ID from their cookie, falling back to the default.
  */
-const getActiveUserId = (request) => {
-    return request.cookies.userId ? parseInt(request.cookies.userId, 10) : 9;
-};
+const getActiveUserId = (req) =>
+    req.cookies.userId ? parseInt(req.cookies.userId, 10) : DEFAULT_USER_ID;
 
+/**
+ * Fetch data from a Directus endpoint and return the `data` array.
+ */
 const fetchData = async (endpoint) => {
     const response = await fetch(`${API_BASE}/${endpoint}`);
     const result = await response.json();
     return result.data;
 };
 
-const getDirectusAssetUrl = (asset) => {
-    const id = (asset && typeof asset === 'object') ? asset.id : asset;
-    return id 
-        ? `https://fdnd-agency.directus.app/assets/${id}` 
-        : '/assets/images/placeholder.webp';
+/**
+ * Build a full Directus asset URL from a UUID string or object with an `id`.
+ * Falls back to a local placeholder if no asset is provided.
+ */
+const assetUrl = (asset) => {
+    const id = asset && typeof asset === 'object' ? asset.id : asset;
+    return id
+        ? `https://fdnd-agency.directus.app/assets/${id}`
+        : PLACEHOLDER_IMAGE;
 };
 
+/**
+ * Resolve a zone ID from a zone relation entry (either a raw ID or an object).
+ */
+const resolveZoneId = (zoneEntry) =>
+    typeof zoneEntry === 'object' ? zoneEntry.frankendael_zones_id : zoneEntry;
+
+/**
+ * Extract all plant IDs from a zone's `plants` relation array.
+ */
+const getPlantIdsFromZone = (zone) => {
+    if (!zone.plants?.length) return [];
+    return zone.plants
+        .map(link => typeof link === 'object' ? link.frankendael_plants_id : link)
+        .filter(Boolean);
+};
+
+/**
+ * Normalise a raw plant object into a consistent shape used across all views.
+ */
 const normalizePlant = (plant) => {
     if (!plant) return null;
-    const mappedType = plant.quest_type === 'labels' ? 'button' : 'image';
     return {
         ...plant,
-        in_bloom: getDirectusAssetUrl(plant.in_bloom),
-        not_in_bloom: getDirectusAssetUrl(plant.not_in_bloom),
+        in_bloom: assetUrl(plant.in_bloom),
+        not_in_bloom: assetUrl(plant.not_in_bloom),
         title: plant.quest_title || 'Opdracht',
-        description: plant.quest_text, 
-        type: mappedType,
-        correct_answer: (plant.quest_options || []).find(option => option.correct)?.value,
-        options: (plant.quest_options || []).map(option => ({
-            text: option.label || option.value,
-            value: option.value,
-            image_url: getDirectusAssetUrl(option.image)
+        description: plant.quest_text,
+        type: plant.quest_type === 'labels' ? 'button' : 'image',
+        correct_answer: (plant.quest_options || []).find(o => o.correct)?.value,
+        options: (plant.quest_options || []).map(o => ({
+            text: o.label || o.value,
+            value: o.value,
+            image_url: assetUrl(o.image),
         })),
-        xp: 25
+        xp: 25,
     };
 };
 
+/**
+ * Return a Set of plant IDs the user has already collected.
+ */
 const getCollectedIds = async (userId) => {
-    const data = await fetchData(`frankendael_users_plants?filter[frankendael_users_id]=${userId}&fields=frankendael_plants_id`);
-    return new Set(data.map(item => {
-        const plantReference = item.frankendael_plants_id;
-        return typeof plantReference === 'object' ? plantReference.id : plantReference;
-    }));
+    const data = await fetchData(
+        `frankendael_users_plants?filter[frankendael_users_id]=${userId}&fields=frankendael_plants_id`
+    );
+    return new Set(
+        data.map(item => {
+            const ref = item.frankendael_plants_id;
+            return typeof ref === 'object' ? ref.id : ref;
+        })
+    );
 };
 
+/**
+ * Return the full, expanded plant objects the user has collected.
+ */
 const getCollectedPlants = async (userId) => {
-    const data = await fetchData(`frankendael_users_plants?filter[frankendael_users_id][_eq]=${userId}&fields=*,frankendael_plants_id.*.*`);
+    const data = await fetchData(
+        `frankendael_users_plants?filter[frankendael_users_id][_eq]=${userId}&fields=*,frankendael_plants_id.*.*`
+    );
     return data.map(item => item.frankendael_plants_id).filter(Boolean);
 };
 
-const getPlantIdsFromZone = (zone) => {
-    if (!zone.plants?.length) return [];
-    return zone.plants.map(link => typeof link === 'object' ? link.frankendael_plants_id : link).filter(Boolean);
+/**
+ * Attach a `main_zone` to a normalised plant, looked up from a zones array.
+ */
+const attachMainZone = (plant, allZones) => {
+    const firstZoneEntry = plant.zones?.[0];
+    const zoneId = resolveZoneId(firstZoneEntry);
+    return {
+        ...normalizePlant(plant),
+        main_zone: allZones.find(z => z.id === zoneId) ?? null,
+    };
 };
 
-// --- ROUTES ---
+// ─── ROUTES ───────────────────────────────────────────────────────────────────
 
-app.get('/', async (request, response) => {
-    const userId = getActiveUserId(request);
+// Home
+app.get('/', async (req, res) => {
+    const userId = getActiveUserId(req);
     try {
-        const [allZones, allNews, collectedPlants] = await Promise.all([
+        const [allZones, allNews, collectedPlants, userProfile] = await Promise.all([
             fetchData('frankendael_zones'),
             fetchData('frankendael_news'),
-            getCollectedPlants(userId)
+            getCollectedPlants(userId),
+            fetchData(`frankendael_users/${userId}`),
         ]);
 
-        const userProfile = await fetchData(`frankendael_users/${userId}`);
-
-        const plantsWithZones = collectedPlants.map(plant => {
-            const firstZoneEntry = plant.zones?.[0];
-            const zoneId = typeof firstZoneEntry === 'object' ? firstZoneEntry.frankendael_zones_id : firstZoneEntry;
-            return { 
-                ...normalizePlant(plant), 
-                main_zone: allZones.find(zone => zone.id === zoneId) ?? null
-            };
-        });
-
-        response.render('index.liquid', { 
-            zones: allZones, 
-            plants: plantsWithZones, 
-            news: allNews.map(item => ({ ...item, image: getDirectusAssetUrl(item.image) })), 
+        res.render('index.liquid', {
+            zones: allZones,
+            plants: collectedPlants.map(p => attachMainZone(p, allZones)),
+            news: allNews.map(n => ({ ...n, image: assetUrl(n.image) })),
             user: userProfile,
-            zone_type: 'home', 
-            current_path: request.path 
+            zone_type: 'home',
+            current_path: req.path,
         });
-    } catch (error) { response.status(500).send("Home error"); }
+    } catch (error) {
+        console.error('Home error:', error);
+        res.status(500).send('Home error');
+    }
 });
 
-app.get('/veldverkenner', async (request, response) => {
-    const userId = getActiveUserId(request);
+// Veldverkenner map overview
+app.get('/veldverkenner', async (req, res) => {
+    const userId = getActiveUserId(req);
     try {
         const [allZones, allPlants, collectedIds] = await Promise.all([
             fetchData('frankendael_zones?fields=*.*'),
             fetchData('frankendael_plants?fields=*.*'),
-            getCollectedIds(userId)
+            getCollectedIds(userId),
         ]);
 
-        const statusMap = {}; 
+        const statusMap = {};
+
         const zonesWithQuest = allZones.map(zone => {
             const plantIdsInZone = getPlantIdsFromZone(zone);
-            const isComplete = plantIdsInZone.length > 0 && plantIdsInZone.every(id => collectedIds.has(id));
+            const isComplete =
+                plantIdsInZone.length > 0 &&
+                plantIdsInZone.every(id => collectedIds.has(id));
+
             statusMap[zone.slug] = isComplete;
 
-            const plantInZone = allPlants.find(p => plantIdsInZone.includes(p.id) && p.quest_title);
-            const normalized = normalizePlant(plantInZone);
-            
+            const plantWithQuest = allPlants.find(
+                p => plantIdsInZone.includes(p.id) && p.quest_title
+            );
+            const normalized = normalizePlant(plantWithQuest);
+
             return {
                 ...zone,
                 quest: normalized ? { ...normalized, plant: normalized } : null,
-                zoneCompleted: isComplete 
+                zoneCompleted: isComplete,
             };
         });
 
-        response.render('veldverkenner.liquid', { 
-            zones: zonesWithQuest, 
+        res.render('veldverkenner.liquid', {
+            zones: zonesWithQuest,
             completedCount: zonesWithQuest.filter(z => z.zoneCompleted).length,
-            status: statusMap, 
-            progress: collectedIds.size, 
+            status: statusMap,
+            progress: collectedIds.size,
             totalZonesCount: zonesWithQuest.length,
-            zone_type: 'veldverkenner', 
-            current_path: request.path 
+            zone_type: 'veldverkenner',
+            current_path: req.path,
         });
-    } catch (error) { response.status(500).send("Map error"); }
+    } catch (error) {
+        console.error('Map error:', error);
+        res.status(500).send('Map error');
+    }
 });
 
-app.get('/veldverkenner/:zone_slug', async (request, response) => {
-    const userId = getActiveUserId(request);
+// Single zone view
+app.get('/veldverkenner/:zone_slug', async (req, res) => {
+    const userId = getActiveUserId(req);
     try {
         const [zoneData, collectedPlants, allZones] = await Promise.all([
-            fetchData(`frankendael_zones?filter[slug][_eq]=${request.params.zone_slug}&fields=*.*`),
+            fetchData(`frankendael_zones?filter[slug][_eq]=${req.params.zone_slug}&fields=*.*`),
             getCollectedPlants(userId),
-            fetchData('frankendael_zones')
+            fetchData('frankendael_zones'),
         ]);
 
         const currentZone = zoneData[0];
-        if (!currentZone) return response.status(404).send("Zone niet gevonden");
+        if (!currentZone) return res.status(404).send('Zone niet gevonden');
 
         const plantIds = getPlantIdsFromZone(currentZone);
-        const plantsInZone = plantIds.length 
-            ? await fetchData(`frankendael_plants?filter[id][_in]=${plantIds.join(',')}&fields=*.*`) 
+        const plantsInZone = plantIds.length
+            ? await fetchData(`frankendael_plants?filter[id][_in]=${plantIds.join(',')}&fields=*.*`)
             : [];
-        
+
         const collectedIds = new Set(collectedPlants.map(p => p.id));
 
         const normalizedPlants = plantsInZone.map(plant => {
             const normalized = normalizePlant(plant);
-            const firstZoneEntry = plant.zones?.[0];
-            const zoneId = typeof firstZoneEntry === 'object' ? firstZoneEntry.frankendael_zones_id : firstZoneEntry;
-            
-            return { 
-                ...normalized, 
-                collected: collectedIds.has(plant.id), 
+            const zoneId = resolveZoneId(plant.zones?.[0]);
+            return {
+                ...normalized,
+                collected: collectedIds.has(plant.id),
                 quest: plant.quest_title ? normalized : null,
-                main_zone: allZones.find(zone => zone.id === zoneId) ?? null 
+                main_zone: allZones.find(z => z.id === zoneId) ?? null,
             };
         });
 
         const totalCount = normalizedPlants.length;
         const collectedCount = normalizedPlants.filter(p => p.collected).length;
 
-        response.render('zone.liquid', { 
-            zone: currentZone, 
+        res.render('zone.liquid', {
+            zone: currentZone,
             zone_name: currentZone.name,
-            plants: normalizedPlants, 
-            zone_slug: request.params.zone_slug, 
-            zone_type: currentZone.type, 
-            current_path: request.path,
+            plants: normalizedPlants,
+            zone_slug: req.params.zone_slug,
+            zone_type: currentZone.type,
+            current_path: req.path,
             stats: {
                 total: totalCount,
                 collected: collectedCount,
-                percentage: totalCount > 0 ? (collectedCount / totalCount) * 100 : 0
-            }
+                percentage: totalCount > 0 ? (collectedCount / totalCount) * 100 : 0,
+            },
         });
-    } catch (error) { response.status(500).send("Zone error"); }
+    } catch (error) {
+        console.error('Zone error:', error);
+        res.status(500).send('Zone error');
+    }
 });
 
-app.get('/veldverkenner/:zone_slug/:item_slug', async (request, response) => {
-    const userId = getActiveUserId(request);
+// Single plant quest
+app.get('/veldverkenner/:zone_slug/:item_slug', async (req, res) => {
+    const userId = getActiveUserId(req);
     try {
         const [zoneData, plantData] = await Promise.all([
-            fetchData(`frankendael_zones?filter[slug][_eq]=${request.params.zone_slug}`),
-            fetchData(`frankendael_plants?filter[slug][_eq]=${request.params.item_slug}&fields=*.*`)
+            fetchData(`frankendael_zones?filter[slug][_eq]=${req.params.zone_slug}`),
+            fetchData(`frankendael_plants?filter[slug][_eq]=${req.params.item_slug}&fields=*.*`),
         ]);
         const plant = normalizePlant(plantData[0]);
-        response.render('opdracht.liquid', { 
-            quest: plant, plant, 
-            zone: zoneData[0], 
-            zone_slug: request.params.zone_slug, 
-            state: request.query.step || 'intro', user_id: userId, 
-            zone_type: zoneData[0].type, 
-            current_path: request.path });
-    } catch (error) { response.status(500).send("Quest error"); }
-});
-
-app.get('/collectie', async (request, response) => {
-    const userId = getActiveUserId(request);
-    const [collected, allZones] = await Promise.all([getCollectedPlants(userId), fetchData('frankendael_zones')]);
-    const plants = collected.map(plant => {
-        const firstZone = plant.zones?.[0];
-        const zoneId = typeof firstZone === 'object' ? firstZone.frankendael_zones_id : firstZone;
-        return { ...normalizePlant(plant), main_zone: allZones.find(z => z.id === zoneId) ?? null };
-    });
-    response.render('collectie.liquid', { plants, zone_type: 'collectie', current_path: request.path });
-});
-
-app.get('/collectie/in_bloom', async (request, response) => {
-    const userId = getActiveUserId(request);
-    const [collected, allZones] = await Promise.all([getCollectedPlants(userId), fetchData('frankendael_zones')]);
-    const filtered = collected.filter(p => p.zones && p.zones.length > 0).map(plant => {
-        const zoneId = typeof plant.zones[0] === 'object' ? plant.zones[0].frankendael_zones_id : plant.zones[0];
-        return { ...normalizePlant(plant), main_zone: allZones.find(z => z.id === zoneId) ?? null };
-    });
-    response.render('collectie.liquid', { plants: filtered, title: 'In Bloei', zone_type: 'collectie', current_path: request.path });
-});
-
-app.get('/collectie/not_in_bloom', async (request, response) => {
-    const userId = getActiveUserId(request);
-    const collected = await getCollectedPlants(userId);
-    const filtered = collected.filter(p => !p.zones || p.zones.length === 0).map(p => normalizePlant(p));
-    response.render('collectie.liquid', { plants: filtered, title: 'Niet in Bloei', zone_type: 'collectie', current_path: request.path });
-});
-
-app.get('/collectie/:plant_slug', async (request, response) => {
-    const data = await fetchData(`frankendael_plants?filter[slug][_eq]=${request.params.plant_slug}&fields=*.*`);
-    if (!data.length) return response.status(404).send('Plant not found');
-    response.render('plant-detail.liquid', { plant: normalizePlant(data[0]), zone_type: 'collectie', current_path: request.path });
-});
-
-app.get('/nieuws', async (request, response) => {
-    const newsData = await fetchData('frankendael_news');
-    response.render('nieuws.liquid', { news: newsData.map(n => ({ ...n, image: getDirectusAssetUrl(n.image) })), zone_type: 'news', current_path: request.path });
-});
-
-app.get('/nieuws/:slug', async (request, response) => {
-    const data = await fetchData(`frankendael_news?filter[slug][_eq]=${request.params.slug}`);
-    response.render('news-detail.liquid', { newsItem: { ...data[0], image: getDirectusAssetUrl(data[0].image) }, zone_type: 'news', current_path: request.path });
-});
-
-app.get('/account', async (request, response) => {
-    const userId = getActiveUserId(request);
-    try {
-        const [userData, collectedPlants] = await Promise.all([
-            fetchData(`frankendael_users/${userId}`),
-            getCollectedPlants(userId)
-        ]);
-        response.render('account.liquid', { 
-            user: userData, 
-            total_plants: collectedPlants.length,
-            current_path: request.path 
+        res.render('opdracht.liquid', {
+            quest: plant,
+            plant,
+            zone: zoneData[0],
+            zone_slug: req.params.zone_slug,
+            state: req.query.step || 'intro',
+            user_id: userId,
+            zone_type: zoneData[0].type,
+            current_path: req.path,
         });
-    } catch (error) { response.status(500).send("Account error"); }
+    } catch (error) {
+        console.error('Quest error:', error);
+        res.status(500).send('Quest error');
+    }
 });
 
-app.get('/login', (request, response) => response.render('login.liquid'));
-app.get('/welcome', (request, response) => response.render('welcome.liquid', { current_path: request.path }));
-app.get('/logout', (request, response) => { response.clearCookie('userId'); response.redirect('/login'); });
+// Collection overview
+app.get('/collectie', async (req, res) => {
+    const userId = getActiveUserId(req);
+    const [collected, allZones] = await Promise.all([
+        getCollectedPlants(userId),
+        fetchData('frankendael_zones'),
+    ]);
+    res.render('collectie.liquid', {
+        plants: collected.map(p => attachMainZone(p, allZones)),
+        zone_type: 'collectie',
+        current_path: req.path,
+    });
+});
 
-// POSTS
-app.post('/veldverkenner/:zone_slug/:item_slug', async (request, response) => {
-    const userId = getActiveUserId(request);
-    const { plant_id } = request.body;
-    const { zone_slug } = request.params; 
+// Collection – in bloom filter
+app.get('/collectie/in_bloom', async (req, res) => {
+    const userId = getActiveUserId(req);
+    const [collected, allZones] = await Promise.all([
+        getCollectedPlants(userId),
+        fetchData('frankendael_zones'),
+    ]);
+    const filtered = collected.filter(p => p.zones?.length > 0);
+    res.render('collectie.liquid', {
+        plants: filtered.map(p => attachMainZone(p, allZones)),
+        title: 'In Bloei',
+        zone_type: 'collectie',
+        current_path: req.path,
+    });
+});
+
+// Collection – not in bloom filter
+app.get('/collectie/not_in_bloom', async (req, res) => {
+    const userId = getActiveUserId(req);
+    const collected = await getCollectedPlants(userId);
+    const filtered = collected.filter(p => !p.zones?.length);
+    res.render('collectie.liquid', {
+        plants: filtered.map(p => normalizePlant(p)),
+        title: 'Niet in Bloei',
+        zone_type: 'collectie',
+        current_path: req.path,
+    });
+});
+
+// Single plant detail
+app.get('/collectie/:plant_slug', async (req, res) => {
+    const data = await fetchData(
+        `frankendael_plants?filter[slug][_eq]=${req.params.plant_slug}&fields=*.*`
+    );
+    if (!data.length) return res.status(404).send('Plant not found');
+    res.render('plant-detail.liquid', {
+        plant: normalizePlant(data[0]),
+        zone_type: 'collectie',
+        current_path: req.path,
+    });
+});
+
+// News overview
+app.get('/nieuws', async (req, res) => {
+    const newsData = await fetchData('frankendael_news');
+    res.render('nieuws.liquid', {
+        news: newsData.map(n => ({ ...n, image: assetUrl(n.image) })),
+        zone_type: 'news',
+        current_path: req.path,
+    });
+});
+
+// Single news article
+app.get('/nieuws/:slug', async (req, res) => {
+    const data = await fetchData(`frankendael_news?filter[slug][_eq]=${req.params.slug}`);
+    res.render('news-detail.liquid', {
+        newsItem: { ...data[0], image: assetUrl(data[0].image) },
+        zone_type: 'news',
+        current_path: req.path,
+    });
+});
+
+// Account page
+app.get('/account', async (req, res) => {
+    const userId = getActiveUserId(req);
+    try {
+        const [userData, collectedPlants, availableMemojis] = await Promise.all([
+            fetchData(`frankendael_users/${userId}`),
+            getCollectedPlants(userId),
+            fetchData('frankendael_memoji'),
+        ]);
+
+        // `userData.memoji` holds the ID of the chosen memoji row (e.g. 3).
+        // We look that row up in availableMemojis so we can resolve the asset UUID.
+        const activeMemojiRow = availableMemojis.find(m => m.id === userData.memoji);
+        userData.avatarUrl = activeMemojiRow
+            ? assetUrl(activeMemojiRow.memoji)
+            : PLACEHOLDER_IMAGE;
+
+        // Attach a resolved image URL to every available memoji option.
+        const memojis = availableMemojis.map(m => ({
+            ...m,
+            imageUrl: assetUrl(m.memoji),
+        }));
+
+        res.render('account.liquid', {
+            user: userData,
+            total_plants: collectedPlants.length,
+            memojis,
+            current_path: req.path,
+        });
+    } catch (error) {
+        console.error('Account error:', error);
+        res.status(500).send('Account error');
+    }
+});
+
+// Update chosen memoji
+app.patch('/account/set-memoji', async (req, res) => {
+    const userId = getActiveUserId(req);
+    const { memojiId } = req.body;
+
+    console.log(`--- 🛠 PATCH Request Received ---`);
+    console.log(`User ID: ${userId}`);
+    console.log(`Payload (memojiId):`, memojiId);
+
+    if (!memojiId) {
+        console.error("❌ No memojiId found in request body!");
+        return res.status(400).send('Missing memojiId');
+    }
+
+    try {
+        const directusResponse = await fetch(`${API_BASE}/frankendael_users/${userId}`, {
+            method: 'PATCH',
+            headers: { 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ 
+                memoji: Number(memojiId) 
+            }),
+        });
+
+        console.log(`📡 Directus Status: ${directusResponse.status} ${directusResponse.statusText}`);
+
+        if (directusResponse.ok) {
+            console.log("✅ Database updated successfully!");
+            // If it's an AJAX request (from our JS), send a 204 No Content or 200 OK
+            if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+                return res.status(200).json({ success: true });
+            }
+            // Fallback for standard form submits
+            res.redirect('/account');
+        } else {
+            const errorData = await directusResponse.json();
+            console.error("❌ Directus Error Details:", JSON.stringify(errorData, null, 2));
+            res.status(directusResponse.status).send('Directus update failed');
+        }
+    } catch (error) {
+        console.error('🔥 Server Error during PATCH:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Auth
+app.get('/login', (_req, res) => res.render('login.liquid'));
+app.get('/welcome', (req, res) => res.render('welcome.liquid', { current_path: req.path }));
+app.get('/logout', (_req, res) => { res.clearCookie('userId'); res.redirect('/login'); });
+
+// Save collected plant
+app.post('/veldverkenner/:zone_slug/:item_slug', async (req, res) => {
+    const userId = getActiveUserId(req);
+    const { plant_id } = req.body;
+    const { zone_slug } = req.params;
     try {
         await fetch(`${API_BASE}/frankendael_users_plants`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ frankendael_users_id: userId, frankendael_plants_id: parseInt(plant_id, 10) })
+            body: JSON.stringify({
+                frankendael_users_id: userId,
+                frankendael_plants_id: parseInt(plant_id, 10),
+            }),
         });
-        response.redirect(`/veldverkenner/${zone_slug}`);
-    } catch (error) { response.status(500).send("Save error"); }
+        res.redirect(`/veldverkenner/${zone_slug}`);
+    } catch (error) {
+        console.error('Save plant error:', error);
+        res.status(500).send('Save error');
+    }
 });
 
-app.post('/login', async (request, response) => {
-    const { username } = request.body;
+// Login
+app.post('/login', async (req, res) => {
+    const { username } = req.body;
     try {
         const allUsers = await fetchData('frankendael_users');
-        const foundUser = allUsers.find(u => u.name?.toLowerCase() === username.toLowerCase());
-        
+        const foundUser = allUsers.find(
+            u => u.name?.toLowerCase() === username.toLowerCase()
+        );
         if (foundUser) {
-            response.cookie('userId', foundUser.id, { maxAge: 2592000000, httpOnly: true });
-            response.redirect('/');
+            res.cookie('userId', foundUser.id, { maxAge: 2_592_000_000, httpOnly: true });
+            res.redirect('/');
         } else {
-            response.status(401).send("Gebruiker niet gevonden");
+            res.status(401).send('Gebruiker niet gevonden');
         }
-    } catch (error) { response.status(503).send("Inloggen mislukt"); }
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(503).send('Inloggen mislukt');
+    }
 });
 
-app.use('/gsap', express.static(path.join(__dirname, 'node_modules/gsap/dist/')));
-app.listen(8000, () => console.log('🚀 Server started: https://localhost:8000'));
+// ─── START ────────────────────────────────────────────────────────────────────
+
+app.listen(8000, () => console.log('🚀 Server started: http://localhost:8000'));

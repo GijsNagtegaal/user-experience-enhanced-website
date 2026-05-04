@@ -26,6 +26,7 @@
     "express": "^5.0.1",
     "gsap": "^3.14.2",
     "liquidjs": "^10.21.0",
+    "method-override": "^3.0.0",
     "ngrok": "^5.0.0-beta.2",
     "node": "^25.9.0"
   }
