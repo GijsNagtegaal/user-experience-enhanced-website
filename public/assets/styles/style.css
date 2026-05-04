@@ -708,29 +708,32 @@ main.account {
     }
 
     section.user-data {
-        display: flex;
-        gap: 1rem;
+        display: grid;
+        grid-template-columns: 40% 1fr;
+        gap: 2rem;
         width: 100%;
-        margin-top: 1rem;
         color: var(--dark-text);
         
         figure {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
-            margin: 0;
+            width: 100%;
+            max-height: 10rem;
             background-color: var(--voedseleiland);
-            width: 35%;
-            height: auto;
-            aspect-ratio: 1 / 1;
-            min-height: 8rem;
             border-radius: var(--border-image);
-            
 
-            img {
+            button {
                 position: absolute;
-                top: -1.5rem;
-                left: .5rem;
-                width: 90%;
-                height: auto;
+                bottom: -1rem;
+                right: -1rem;
+                border: none;
+                width: 3rem;
+                height: 3rem;
+                border-radius: var(--border-round);
+                background-color: var(--medium-background);
+                border: 2px solid var(--dark-border);
             }
         }
 
@@ -747,7 +750,9 @@ main.account {
 
         top: auto; 
         width: 100%;
-        height: 80dvh;
+        min-height: 40dvh;
+        height: auto;
+        max-height: 60dvh;
         position: fixed;
         bottom: 0;
         left: 0;
@@ -782,13 +787,28 @@ main.account {
             }
         }
 
-        article {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+        form 
 
             img {
-                width: 100px;
-                height: 100px;
+                width: 100%;
+                height: auto;
+            }
+
+            ul {
+                display: grid;
+                margin-inline: 1rem;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 1rem;
+
+                button {
+                    border: none;
+                    background-color: var(--voedseleiland);
+                    border-radius: var(--border-image);
+
+                    img {
+                        border-radius: var(--border-image);
+                    }
+                }
             }
         }
     }
@@ -834,65 +854,10 @@ main.account {
     }
 }
 
-/* Loader + Succes state */
-
-/* 1. Loader Button & Animation Bar */
-.loader {
-    height: 4px;
-    background: #007aff;
-    width: 0;
-    opacity: 0;
-}
-
-.loader.shownow {
-    animation: loadProgress 1s ease-in-out;
-}
-
-@keyframes loadProgress {
-    0% { width: 0; opacity: 1; }
-    90% { width: 100%; opacity: 1; }
-    100% { width: 100%; opacity: 0; }
-}
-
-/* 2. Button Loading Spinner */
-.is-loading {
-    position: relative;
-    color: transparent !important;
-    pointer-events: none;
-}
-
-.is-loading::after {
-    content: "";
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    top: 50%;
-    left: 50%;
-    margin: -9px 0 0 -9px;
-    border: 2px solid rgba(0,0,0,0.1);
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* 3. Image Success Transition */
-.memoji-display {
+.memoji {
     transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* 4. Popover (Standard API) */
-#profiselector:popover-open {
-    animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
 
 /***********************************
 login page

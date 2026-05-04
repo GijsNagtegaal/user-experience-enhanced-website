@@ -20,7 +20,7 @@ allOptions.forEach(btn => {
 
 // Memoji handler i make sure the event prevent default so the user does not have to refresh for the new pfp to show up
 const memojiForm = document.getElementById('memojiForm');
-const displayImg = document.querySelector('.memoji-display');
+const displayImg = document.querySelector('.memoji');
 const popover = document.getElementById('profiselector');
 
 

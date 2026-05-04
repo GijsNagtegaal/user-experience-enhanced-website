@@ -94,7 +94,7 @@ body {
 
     /* site wide colors */
     --light-background: light-dark(#F7F7F7, hsl(0, 0%, 12%));
-    --medium-background: #a2a2a2;
+    --medium-background: light-dark(#a2a2a2, #d6d6d6);
     --dark-background: light-dark(hsl(0, 0%, 12%), #F7F7F7);
 
     --light-text: light-dark(#F7F7F7, #1a1a1a);

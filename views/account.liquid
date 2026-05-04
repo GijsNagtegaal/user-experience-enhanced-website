@@ -23,8 +23,7 @@
                 <span>Sluiten</span>
             </button>
         </header>
-    
-        <!-- Inside your popover form, add an ID for JS targeting -->
+
         <form id="memojiForm" method="POST" action="/account/set-memoji?_method=PATCH">
             <ul class="memoji-grid">
                 {% for item in memojis %}
@@ -41,13 +40,13 @@
     </section>
     <section class="user-data">
         <!-- Update the main profile image section -->
-        <figure class="profile-figure">
+        <figure>
             {% render 'partials/picture.liquid',
                 imagesrc: user.avatarUrl,
                 width: "150",
                 height: "150",
                 alt: user.name,
-                class: "memoji-display",
+                class: "memoji",
                 fetch: "high",
                 loading: "eager",
             %}
