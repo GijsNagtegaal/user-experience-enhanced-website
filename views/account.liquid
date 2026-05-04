@@ -117,6 +117,18 @@
 
             <input type="radio" id="color-mode-auto" name="color-mode" checked="checked" />
             <label for="color-mode-auto" title="Use system light/dark mode setting">System</label>
+
+            <section class="accent-settings">
+                <h2>Persoonlijke Stijl</h2>
+                <div class="color-picker-wrapper">
+                    <label for="accentColor">Kies je accentkleur:</label>
+                    <input type="color" id="accentColor" value="#34a853">
+                </div>
+                <p id="contrastWarning" style="display:none; color: #d93025;">
+                    ⚠️ Deze kleur is niet goed leesbaar in de huidige weergave.
+                </p>
+            </section>
+            
         </details>
         <form action="/account" method="POST">
             <button class="styled reset">Voortgang wissen</button>

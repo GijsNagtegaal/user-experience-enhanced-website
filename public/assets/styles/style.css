@@ -721,7 +721,7 @@ main.account {
             position: relative;
             width: 100%;
             max-height: 10rem;
-            background-color: var(--voedseleiland);
+            background-color: var(--accent-color);
             border-radius: var(--border-image);
 
             button {
@@ -802,7 +802,7 @@ main.account {
 
                 button {
                     border: none;
-                    background-color: var(--voedseleiland);
+                    background-color: var(--accent-color);
                     border-radius: var(--border-image);
 
                     img {

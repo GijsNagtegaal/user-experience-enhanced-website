@@ -440,6 +440,23 @@ app.patch('/account/set-memoji', async (req, res) => {
     }
 });
 
+// Update chosen theme color
+app.patch('/account/set-accent', async (request, response) => {
+    const userId = getActiveUserId(request);
+    const { accentColor } = request.body;
+
+    try {
+        await fetch(`${API_BASE}/frankendael_users/${userId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accent_color: accentColor })
+        });
+        response.status(200).json({ message: "Saved" });
+    } catch (error) {
+        response.status(500).send("Error saving color");
+    }
+});
+
 // Auth
 app.get('/login', (_req, res) => res.render('login.liquid'));
 app.get('/welcome', (req, res) => res.render('welcome.liquid', { current_path: req.path }));

@@ -76,3 +76,53 @@ if (memojiForm) {
         }
     });
 }
+
+
+// color picker user can pick their own accent color BUT it has to have enough contrast based on their system settings color. WOW thats coool
+
+const colorPicker = document.querySelector('#accentColor');
+const warning = document.querySelector('#contrastWarning');
+
+// Check if there is a saved color in user directus
+const savedColor = localStorage.getItem('userAccentColor');
+if (savedColor) {
+    colorPicker.value = savedColor;
+    applyColor(savedColor);
+}
+
+// Calculate the contrast
+function getLuminance(hex) {
+    const rgb = hex.match(/[A-Za-z0-9]{2}/g).map(v => {
+        let val = parseInt(v, 16) / 255;
+        return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+}
+
+function applyColor(color) {
+    const luminance = getLuminance(color);
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    // Contrast Logic
+    const isLowContrast = isDarkMode ? luminance < 0.2 : luminance > 0.7;
+
+    if (isLowContrast) {
+        warning.style.display = 'block';
+    } else {
+        warning.style.display = 'none';
+        // Apply globally to CSS variable
+        document.documentElement.style.setProperty('--accent-color', color);
+        // Save to Local Storage instead of Directus
+        localStorage.setItem('userAccentColor', color);
+    }
+}
+
+// Listen for picker changes
+colorPicker.addEventListener('input', (e) => {
+    applyColor(e.target.value);
+});
+
+// Re-check if the user toggles System Dark Mode
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    applyColor(colorPicker.value);
+});

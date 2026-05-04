@@ -126,6 +126,8 @@ body {
     --always-light: #ffffff;
 
     background-color: var(--light-background);
+
+    --accent: 
 }
 
 h1, h2, h3, h4, h5, h6 {
