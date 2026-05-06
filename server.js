@@ -281,6 +281,29 @@ app.get('/collectie', async (req, res) => {
     });
 });
 
+app.get('/collectie/in_bloom', async (request, response) => {
+    const userId = getActiveUserId(request);
+    const [collected, allZones] = await Promise.all([getCollectedPlants(userId), fetchData('frankendael_zones')]);
+    const filtered = collected.filter(p => p.zones && p.zones.length > 0).map(plant => {
+        const zoneId = typeof plant.zones[0] === 'object' ? plant.zones[0].frankendael_zones_id : plant.zones[0];
+        return { ...normalizePlant(plant), main_zone: allZones.find(z => z.id === zoneId) ?? null };
+    });
+    response.render('collectie.liquid', { plants: filtered, title: 'In Bloei', zone_type: 'collectie', current_path: request.path });
+});
+
+app.get('/collectie/not_in_bloom', async (request, response) => {
+    const userId = getActiveUserId(request);
+    const collected = await getCollectedPlants(userId);
+    const filtered = collected.filter(p => !p.zones || p.zones.length === 0).map(p => normalizePlant(p));
+    response.render('collectie.liquid', { plants: filtered, title: 'Niet in Bloei', zone_type: 'collectie', current_path: request.path });
+});
+
+app.get('/collectie/:plant_slug', async (request, response) => {
+    const data = await fetchData(`frankendael_plants?filter[slug][_eq]=${request.params.plant_slug}&fields=*.*`);
+    if (!data.length) return response.status(404).send('Plant not found');
+    response.render('plant-detail.liquid', { plant: normalizePlant(data[0]), zone_type: 'collectie', current_path: request.path });
+});
+
 // Account page
 app.get('/account', async (req, res) => {
     try {
@@ -359,6 +382,11 @@ app.get('/nieuws', async (req, res) => {
         zone_type: 'news',
         current_path: req.path,
     });
+});
+
+app.get('/nieuws/:slug', async (request, response) => {
+    const data = await fetchData(`frankendael_news?filter[slug][_eq]=${request.params.slug}`);
+    response.render('news-detail.liquid', { newsItem: { ...data[0], image: getDirectusAssetUrl(data[0].image) }, zone_type: 'news', current_path: request.path });
 });
 
 app.get('/login', (_req, res) => res.render('login.liquid'));

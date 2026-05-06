@@ -2,14 +2,14 @@
   "name": "user-experience-enhanced-website",
   "version": "1.0.0",
   "description": "Ontwerp en maak een website voor een opdrachtgever waarbij je de website verrijkt volgens het principe van progressive enhancement.",
-  "main": "server.js",
+  "main": "server-advanced.js",
   "type": "module",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server-advanced.js",
+    "dev": "nodemon server-advanced.js"
   },
   "repository": {
     "type": "git",
