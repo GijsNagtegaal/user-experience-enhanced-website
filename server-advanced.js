@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { globalData } from './middleware/globals.js';
 import * as api from './lib/api.js';
 
-import explorerRoutes from './routes/explorer.js';
+import veldverkennerRoutes from './routes/veldverkenner.js';
 import collectionRoutes from './routes/collection.js';
 import accountRoutes from './routes/account.js';
 import newsRoutes from './routes/news.js';
@@ -61,7 +61,7 @@ app.post('/veldverkenner/:zone_slug/:item_slug', async (req, res) => {
 });
 
 // Mount External Routers
-app.use(explorerRoutes);
+app.use(veldverkennerRoutes);
 app.use(collectionRoutes);
 app.use(accountRoutes);
 app.use(newsRoutes);
