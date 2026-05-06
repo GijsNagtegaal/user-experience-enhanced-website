@@ -8,12 +8,10 @@ import { fileURLToPath } from 'url';
 import { globalData } from './middleware/globals.js';
 import * as api from './lib/api.js';
 
-// Route Imports
 import explorerRoutes from './routes/explorer.js';
 import collectionRoutes from './routes/collection.js';
 import accountRoutes from './routes/account.js';
 import newsRoutes from './routes/news.js';
-import testRoutes from './routes/teset.js';
 
 
 const app = express();
@@ -67,6 +65,5 @@ app.use(explorerRoutes);
 app.use(collectionRoutes);
 app.use(accountRoutes);
 app.use(newsRoutes);
-app.use(testRoutes);
 
 app.listen(8000, () => console.log('🚀 1:1 Modular Server Started: http://localhost:8000'));
