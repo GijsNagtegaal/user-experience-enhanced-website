@@ -1,5 +1,7 @@
 {% assign active_quests = plants | where: "collected", false %}
-
+{% include 'partials/calcs.liquid', 
+    birthdate: user.birthdate 
+%}
 <ul class="quest">
     {% for plant in active_quests %}
         {% if plant.quest %}

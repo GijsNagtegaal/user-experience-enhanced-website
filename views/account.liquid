@@ -1,4 +1,7 @@
 {% render 'partials/head.liquid' %}
+{% include 'partials/calcs.liquid', 
+    birthdate: user.birthdate 
+%}
 <main class="account"> 
     {% render 'partials/breadcrumbs.liquid',
         current_path: current_path,
@@ -56,16 +59,11 @@
                 </svg>
             </button>
         </figure>
-
         <article>
             
             {% render 'partials/general-heading.liquid',
                 heading_level: 2,
                 content: user.name,
-            %}
-
-            {% include 'partials/calcs.liquid', 
-                birthdate: user.birthdate 
             %}
 
             <p>Leeftijd: {{ age }}</p>

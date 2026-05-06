@@ -1,5 +1,8 @@
 {% render 'partials/head.liquid'
 %}
+{% include 'partials/calcs.liquid', 
+    birthdate: user.birthdate 
+%}
 <header class="home">
     {% assign hoi_message = "Welkom, " | append: user.name %}
     {% render 'partials/general-heading.liquid',
@@ -16,6 +19,13 @@
 </header>
 
 <main class="home">
+    {% if age < 28 %}
+        <p>hoi ik ben jong</p>
+        <p>want ik ben {{ age }}</p>
+    {% else %}
+        <p>hoi ik ben oud</p>
+        <p>want ik ben {{ age }}</p>
+    {% endif %}
     {% comment %} section with all of the users collected plants {% endcomment %}
     <section>
         <div class="textwrapper">

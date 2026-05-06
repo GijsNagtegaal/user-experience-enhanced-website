@@ -1,6 +1,9 @@
 {% render 'partials/head.liquid'%}
+{% include 'partials/calcs.liquid', 
+    birthdate: user.birthdate 
+%}
 <main class="quest" data-zone="{{ zone_type }}">
-    
+
     {% case state %}
         {% when 'intro' %}
             <section class="intro">
@@ -143,8 +146,11 @@
 
                     <p>Je bent een echte natuur kenner! Goed gedaan</p>
 
-                    {% if age < 28 %}
-                        
+                    {% if age == "young" %}
+                        <p>hoi ik ben jong</p>
+
+                    {% else %}
+                        <p>hoi ik ben oud</p>
                     {% endif %}
 
                     <p>
