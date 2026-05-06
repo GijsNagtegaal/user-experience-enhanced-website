@@ -126,8 +126,6 @@ body {
     --always-light: #ffffff;
 
     background-color: var(--light-background);
-
-    --accent: 
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -513,4 +511,41 @@ img.portrait {
         opacity: 1;
         pointer-events: auto;
     }
+}
+
+
+
+
+
+/* Loading State */
+.color-picker-wrapper.is-loading {
+    cursor: wait;
+    position: relative;
+}
+
+.color-picker-wrapper.is-loading::after {
+    content: "⌛"; /* You can replace this with a CSS spinner */
+    position: absolute;
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Success State */
+.color-picker-wrapper.is-success input {
+    outline: 2px solid #34a853;
+    transition: outline 0.3s ease;
+}
+
+.color-picker-wrapper.is-success::after {
+    content: "✅";
+    position: absolute;
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Error State */
+.color-picker-wrapper.is-error input {
+    outline: 2px solid #d93025;
 }

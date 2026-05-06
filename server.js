@@ -20,6 +20,7 @@ const __dirname = path.dirname(__filename);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use(express.json());
 app.use(methodOverride('_method'));
 app.use('/gsap', express.static(path.join(__dirname, 'node_modules/gsap/dist/')));
 
@@ -397,16 +398,7 @@ app.get('/account', async (req, res) => {
 // Update chosen memoji
 app.patch('/account/set-memoji', async (req, res) => {
     const userId = getActiveUserId(req);
-    const { memojiId } = req.body;
-
-    console.log(`--- 🛠 PATCH Request Received ---`);
-    console.log(`User ID: ${userId}`);
-    console.log(`Payload (memojiId):`, memojiId);
-
-    if (!memojiId) {
-        console.error("❌ No memojiId found in request body!");
-        return res.status(400).send('Missing memojiId');
-    }
+    const { memojiId } = req.body; 
 
     try {
         const directusResponse = await fetch(`${API_BASE}/frankendael_users/${userId}`, {
@@ -422,8 +414,7 @@ app.patch('/account/set-memoji', async (req, res) => {
         console.log(`📡 Directus Status: ${directusResponse.status} ${directusResponse.statusText}`);
 
         if (directusResponse.ok) {
-            console.log("✅ Database updated successfully!");
-            // If it's an AJAX request (from our JS), send a 204 No Content or 200 OK
+
             if (req.xhr || req.headers.accept.indexOf('json') > -1) {
                 return res.status(200).json({ success: true });
             }
@@ -431,29 +422,41 @@ app.patch('/account/set-memoji', async (req, res) => {
             res.redirect('/account');
         } else {
             const errorData = await directusResponse.json();
-            console.error("❌ Directus Error Details:", JSON.stringify(errorData, null, 2));
             res.status(directusResponse.status).send('Directus update failed');
         }
     } catch (error) {
-        console.error('🔥 Server Error during PATCH:', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-// Update chosen theme color
-app.patch('/account/set-accent', async (request, response) => {
-    const userId = getActiveUserId(request);
-    const { accentColor } = request.body;
+app.patch('/account/set-accent', async (req, res) => {
+    const userId = getActiveUserId(req);
+    const { accentColor } = req.body; 
+    // 1. Validation
+    if (!userId) return res.status(401).json({ error: 'User not authenticated' });
+    if (!accentColor) return res.status(400).json({ error: 'No color provided' });
 
     try {
-        await fetch(`${API_BASE}/frankendael_users/${userId}`, {
+        // 2. Patch Directus
+        const directusResponse = await fetch(`${API_BASE}/frankendael_users/${userId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accent_color: accentColor })
+            body: JSON.stringify({ 
+                accent_color: accentColor // Matches your DB field exactly
+            }),
         });
-        response.status(200).json({ message: "Saved" });
+
+        if (directusResponse.ok) {
+            // Send back success so the frontend shows the checkmark
+            return res.status(200).json({ success: true });
+        } else {
+            const errorData = await directusResponse.json();
+            console.error('Directus Error:', errorData);
+            return res.status(directusResponse.status).json(errorData);
+        }
     } catch (error) {
-        response.status(500).send("Error saving color");
+        console.error('Connection Error:', error);
+        return res.status(500).json({ error: 'Server connection failed' });
     }
 });
 

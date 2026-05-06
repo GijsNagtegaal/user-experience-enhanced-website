@@ -120,13 +120,16 @@
 
             <section class="accent-settings">
                 <h2>Persoonlijke Stijl</h2>
-                <div class="color-picker-wrapper">
-                    <label for="accentColor">Kies je accentkleur:</label>
-                    <input type="color" id="accentColor" value="#34a853">
-                </div>
-                <p id="contrastWarning" style="display:none; color: #d93025;">
-                    ⚠️ Deze kleur is niet goed leesbaar in de huidige weergave.
-                </p>
+                <!-- Added form with action pointing to your patch route -->
+                <form id="accentForm" action="/account/set-accent" method="POST">
+                    <div class="color-picker-wrapper">
+                        <label for="accentColor">Kies je accentkleur:</label>
+                        <input type="color" id="accentColor" name="accentColor" value="#34a853">
+                    </div>
+                    <p id="contrastWarning" style="display:none; color: #d93025; margin-top: 10px;">
+                        ⚠️ Deze kleur is niet goed leesbaar in de huidige weergave.
+                    </p>
+                </form>
             </section>
             
         </details>

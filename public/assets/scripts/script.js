@@ -1,96 +1,33 @@
+/**
+ * UI & Animation Logic
+ */
 const loaderBtn = document.querySelector('.loader');
 const allOptions = document.querySelectorAll('.options-container button');
+
 const triggerAnimation = (event) => {
-
     const clickedBtn = event.currentTarget;
-
     const targetUrl = clickedBtn.getAttribute('data-url');
-    loaderBtn.setAttribute('href', targetUrl);
-
-    loaderBtn.classList.remove('shownow', 'ready');
     
-    void loaderBtn.offsetWidth; 
-
-    loaderBtn.classList.add('shownow');
+    if (loaderBtn) {
+        loaderBtn.setAttribute('href', targetUrl);
+        loaderBtn.classList.remove('shownow', 'ready');
+        void loaderBtn.offsetWidth; // Reflow to restart animation
+        loaderBtn.classList.add('shownow');
+    }
 };
 
 allOptions.forEach(btn => {
     btn.addEventListener('click', triggerAnimation);
 });
 
-// Memoji handler i make sure the event prevent default so the user does not have to refresh for the new pfp to show up
-const memojiForm = document.getElementById('memojiForm');
-const displayImg = document.querySelector('.memoji');
-const popover = document.getElementById('profiselector');
-
-
-// Handle Memoji Form Submission
-if (memojiForm) {
-    memojiForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const submitter = e.submitter || document.activeElement;
-        const memojiId = submitter.value;
-        const imgInside = submitter.querySelector('img');
-
-        if (!memojiId) return memojiForm.submit();
-
-        // UI Loading State
-        submitter.classList.add('is-loading');
-        if (displayImg) displayImg.style.opacity = '0.5';
-
-        try {
-            const response = await fetch(memojiForm.action, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ memojiId })
-            });
-
-            if (!response.ok) throw new Error();
-
-            // Update UI on Success
-            if (imgInside && displayImg) {
-                const newBaseUrl = imgInside.src.split('?')[0];
-                const picture = displayImg.closest('picture');
-                const cacheBuster = `v=${Date.now()}`;
-
-                if (picture) {
-                    picture.querySelectorAll('source').forEach(source => {
-                        const format = source.type.split('/')[1] || 'webp';
-                        source.srcset = `${newBaseUrl}?width=150&height=150&format=${format}&quality=70&${cacheBuster}`;
-                    });
-                    displayImg.src = `${newBaseUrl}?width=150&height=150&quality=60&${cacheBuster}`;
-                } else {
-                    displayImg.src = `${imgInside.src}&${cacheBuster}`;
-                }
-            }
-            
-            // Close Popover
-            popover?.hidePopover ? popover.hidePopover() : (popover.style.display = 'none');
-
-        } catch (err) {
-            memojiForm.submit(); // Fallback to full reload on error
-        } finally {
-            submitter.classList.remove('is-loading');
-            if (displayImg) displayImg.style.opacity = '1';
-        }
-    });
-}
-
-
-// color picker user can pick their own accent color BUT it has to have enough contrast based on their system settings color. WOW thats coool
-
+/**
+ * Color Picker & Contrast Logic
+ */
+const accentForm = document.getElementById('accentForm');
 const colorPicker = document.querySelector('#accentColor');
 const warning = document.querySelector('#contrastWarning');
 
-// Check if there is a saved color in user directus
-const savedColor = localStorage.getItem('userAccentColor');
-if (savedColor) {
-    colorPicker.value = savedColor;
-    applyColor(savedColor);
-}
-
-// Calculate the contrast
+// Helper: Calculate luminance for contrast checking
 function getLuminance(hex) {
     const rgb = hex.match(/[A-Za-z0-9]{2}/g).map(v => {
         let val = parseInt(v, 16) / 255;
@@ -99,30 +36,90 @@ function getLuminance(hex) {
     return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
 }
 
-function applyColor(color) {
-    const luminance = getLuminance(color);
-    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+/**
+ * AJAX function to talk to your Directus PATCH route
+ * Includes Loading, Success, and Error states
+ */
+async function syncColorToServer(color) {
+    if (!accentForm) return;
 
-    // Contrast Logic
-    const isLowContrast = isDarkMode ? luminance < 0.2 : luminance > 0.7;
+    const wrapper = colorPicker.closest('.color-picker-wrapper');
+    if (wrapper) wrapper.classList.add('is-loading');
 
-    if (isLowContrast) {
-        warning.style.display = 'block';
-    } else {
-        warning.style.display = 'none';
-        // Apply globally to CSS variable
-        document.documentElement.style.setProperty('--accent-color', color);
-        // Save to Local Storage instead of Directus
-        localStorage.setItem('userAccentColor', color);
+    try {
+        const response = await fetch(accentForm.action, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accentColor: color }) // Sent as JSON
+        });
+        
+        if (response.ok) {
+            if (wrapper) {
+                wrapper.classList.remove('is-loading');
+                wrapper.classList.add('is-success');
+                setTimeout(() => wrapper.classList.remove('is-success'), 2500);
+            }
+        } else {
+            throw new Error("Patch failed");
+        }
+    } catch (err) {
+        console.error("❌ Patch Error:", err);
+        if (wrapper) wrapper.classList.add('is-error');
+    } finally {
+        if (wrapper) wrapper.classList.remove('is-loading');
     }
 }
 
-// Listen for picker changes
-colorPicker.addEventListener('input', (e) => {
-    applyColor(e.target.value);
-});
+// Main logic to apply colors locally (Optimistic UI)
+function applyColor(color, shouldSync = true) {
+    if (!colorPicker) return;
 
-// Re-check if the user toggles System Dark Mode
+    const luminance = getLuminance(color);
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Low contrast check
+    const isLowContrast = isDarkMode ? luminance < 0.2 : luminance > 0.7;
+
+    if (isLowContrast) {
+        if (warning) warning.style.display = 'block';
+    } else {
+        if (warning) warning.style.display = 'none';
+        
+        // Update CSS and LocalStorage immediately for instant feedback
+        document.documentElement.style.setProperty('--accent-color', color);
+        localStorage.setItem('userAccentColor', color);
+
+        if (shouldSync) {
+            syncColorToServer(color);
+        }
+    }
+}
+
+/**
+ * Initialization & Event Listeners
+ */
+if (colorPicker) {
+    // 1. Load saved color from LocalStorage on page load
+    const savedColor = localStorage.getItem('userAccentColor');
+    if (savedColor) {
+        colorPicker.value = savedColor;
+        applyColor(savedColor, false); 
+    }
+
+    // 2. Live preview (does not save to DB while dragging)
+    colorPicker.addEventListener('input', (e) => {
+        applyColor(e.target.value, false);
+    });
+
+    // 3. Final selection (saves to DB when user finishes picking)
+    colorPicker.addEventListener('change', (e) => {
+        // Prevent default form behavior if necessary
+        e.preventDefault();
+        applyColor(e.target.value, true);
+    });
+}
+
+// Update contrast check if user toggles System Dark Mode
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    applyColor(colorPicker.value);
+    if (colorPicker) applyColor(colorPicker.value, false);
 });

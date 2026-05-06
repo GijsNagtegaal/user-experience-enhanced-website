@@ -177,6 +177,7 @@ header.opdrachten-header {
 ul.news {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 1rem;
 
     li {
@@ -191,17 +192,25 @@ ul.news {
         div {
             display: flex;
             flex-direction: column;
+            width: 100%;
+            order: 2;
         }
 
         img {
-            width: 40%; 
+            width: 100%; 
+            order: 1;
+        }
+
+        .heading {
+            margin-block: .5rem;
         }
 
     }
 
     a {
-        display: flex;
-        flex-direction: row-reverse;
+        display: grid;
+        grid-template-columns: 1fr 60%;
+        align-items: center;
         gap: .5rem;
         color: inherit;
     }
