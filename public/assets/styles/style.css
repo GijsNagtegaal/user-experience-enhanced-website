@@ -29,11 +29,16 @@ header.home {
     margin: 1rem;
 
 
-    a {
+    a.myacc {
         display: flex;
         flex-direction: column;
         align-items: center;
         color: var(--dark-text);
+
+        img {
+            width: 4.5rem;
+            height: auto;
+        }
     }
 
     svg {

@@ -8,6 +8,7 @@ import methodOverride from 'method-override';
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 const API_BASE = 'https://fdnd-agency.directus.app/items';
+const ASSET_BASE = 'https://fdnd-agency.directus.app/assets';
 const PLACEHOLDER_IMAGE = '/assets/images/placeholder.webp';
 const DEFAULT_USER_ID = 9;
 
@@ -35,15 +36,23 @@ const getActiveUserId = (req) =>
     req.cookies.userId ? parseInt(req.cookies.userId, 10) : DEFAULT_USER_ID;
 
 const fetchData = async (endpoint) => {
-    const response = await fetch(`${API_BASE}/${endpoint}`);
-    const result = await response.json();
-    return result.data;
+    try {
+        const response = await fetch(`${API_BASE}/${endpoint}`);
+        const result = await response.json();
+        return result.data;
+    } catch (e) {
+        console.error(`Fetch error for ${endpoint}:`, e);
+        return null;
+    }
 };
 
 const assetUrl = (asset) => {
-    const id = asset && typeof asset === 'object' ? asset.id : asset;
-    return id
-        ? `https://fdnd-agency.directus.app/assets/${id}`
+    if (!asset) return PLACEHOLDER_IMAGE;
+
+    const id = typeof asset === 'object' ? (asset.id || asset.memoji) : asset;
+
+    return (id && typeof id === 'string') 
+        ? `${ASSET_BASE}/${id}` 
         : PLACEHOLDER_IMAGE;
 };
 
@@ -79,7 +88,7 @@ const normalizePlant = (plant) => {
 const getCollectedIds = async (userId) => {
     const data = await fetchData(
         `frankendael_users_plants?filter[frankendael_users_id]=${userId}&fields=frankendael_plants_id`
-    );
+    ) || [];
     return new Set(
         data.map(item => {
             const ref = item.frankendael_plants_id;
@@ -91,7 +100,7 @@ const getCollectedIds = async (userId) => {
 const getCollectedPlants = async (userId) => {
     const data = await fetchData(
         `frankendael_users_plants?filter[frankendael_users_id][_eq]=${userId}&fields=*,frankendael_plants_id.*.*`
-    );
+    ) || [];
     return data.map(item => item.frankendael_plants_id).filter(Boolean);
 };
 
@@ -107,26 +116,33 @@ const attachMainZone = (plant, allZones) => {
 // ─── GLOBALE DATA MIDDLEWARE ──────────────────────────────────────────────────
 
 app.use(async (req, res, next) => {
-    // Sla login/static paden over als je wilt, maar voor nu halen we data op
-    if (req.path.startsWith('/gsap') || req.path.startsWith('/assets')) return next();
+    // Prevent the middleware from running on static assets or specific libraries
+    if (req.path.includes('.') || req.path.startsWith('/gsap')) return next();
     
     const userId = getActiveUserId(req);
+
     try {
         const [userProfile, allZones, collectedIds] = await Promise.all([
-            fetchData(`frankendael_users/${userId}`),
+            fetchData(`frankendael_users/${userId}?fields=*,memoji.*`),
             fetchData('frankendael_zones?fields=*.*'),
             getCollectedIds(userId)
         ]);
 
-        // Beschikbaar in elke view als {{ user }}, {{ allZones }}, etc.
-        res.locals.user = userProfile;
-        res.locals.allZones = allZones;
-        res.locals.collectedIds = collectedIds;
         res.locals.userId = userId;
+        res.locals.user = userProfile || {};
+        res.locals.allZones = allZones || [];
+        res.locals.collectedIds = collectedIds || new Set();
+
+        // Handle the nested Memoji asset ID
+        // Directus often returns the junction object, we need the file ID inside it
+        const memojiAsset = userProfile?.memoji?.memoji || userProfile?.memoji;
+        res.locals.userMemoji = assetUrl(memojiAsset);
 
         next();
     } catch (error) {
         console.error('Middleware Error:', error);
+        res.locals.userId = userId;
+        res.locals.userMemoji = PLACEHOLDER_IMAGE;
         next();
     }
 });
@@ -143,8 +159,8 @@ app.get('/', async (req, res) => {
 
         res.render('index.liquid', {
             zones: res.locals.allZones,
-            plants: collectedPlants.map(p => attachMainZone(p, res.locals.allZones)),
-            news: allNews.map(n => ({ ...n, image: assetUrl(n.image) })),
+            plants: (collectedPlants || []).map(p => attachMainZone(p, res.locals.allZones)),
+            news: (allNews || []).map(n => ({ ...n, image: assetUrl(n.image) })),
             zone_type: 'home',
             current_path: req.path,
         });
@@ -156,13 +172,13 @@ app.get('/', async (req, res) => {
 // Veldverkenner map overview
 app.get('/veldverkenner', async (req, res) => {
     try {
-        const allPlants = await fetchData('frankendael_plants?fields=*.*');
+        const allPlants = await fetchData('frankendael_plants?fields=*.*') || [];
         const statusMap = {};
 
         const zonesWithQuest = res.locals.allZones.map(zone => {
             const plantIdsInZone = getPlantIdsFromZone(zone);
             const isComplete = plantIdsInZone.length > 0 && 
-                               plantIdsInZone.every(id => res.locals.collectedIds.has(id));
+                plantIdsInZone.every(id => res.locals.collectedIds.has(id));
 
             statusMap[zone.slug] = isComplete;
             const plantWithQuest = allPlants.find(p => plantIdsInZone.includes(p.id) && p.quest_title);
@@ -192,7 +208,7 @@ app.get('/veldverkenner', async (req, res) => {
 // Single zone view
 app.get('/veldverkenner/:zone_slug', async (req, res) => {
     try {
-        const zoneData = await fetchData(`frankendael_zones?filter[slug][_eq]=${req.params.zone_slug}&fields=*.*`);
+        const zoneData = await fetchData(`frankendael_zones?filter[slug][_eq]=${req.params.zone_slug}&fields=*.*`) || [];
         const currentZone = zoneData[0];
         if (!currentZone) return res.status(404).send('Zone niet gevonden');
 
@@ -201,7 +217,7 @@ app.get('/veldverkenner/:zone_slug', async (req, res) => {
             ? await fetchData(`frankendael_plants?filter[id][_in]=${plantIds.join(',')}&fields=*.*`)
             : [];
 
-        const normalizedPlants = plantsInZone.map(plant => {
+        const normalizedPlants = (plantsInZone || []).map(plant => {
             const normalized = normalizePlant(plant);
             const zoneId = resolveZoneId(plant.zones?.[0]);
             return {
@@ -268,28 +284,33 @@ app.get('/collectie', async (req, res) => {
 // Account page
 app.get('/account', async (req, res) => {
     try {
-        const availableMemojis = await fetchData('frankendael_memoji');
+        // Fetch all possible memojis for the selection grid
+        const availableMemojis = await fetchData('frankendael_memoji') || [];
+        
+        // We use the 'user' already fetched by our middleware
         const user = res.locals.user;
 
-        const activeMemojiRow = availableMemojis.find(m => m.id === user.memoji);
-        user.avatarUrl = activeMemojiRow ? assetUrl(activeMemojiRow.memoji) : PLACEHOLDER_IMAGE;
-
+        // Map the grid of memojis for the user to pick from
         const memojis = availableMemojis.map(m => ({
             ...m,
             imageUrl: assetUrl(m.memoji),
+            // Add a check to see if this is the currently selected one
+            selected: m.id === user.memoji
         }));
 
         res.render('account.liquid', {
+            // total_plants is calculated from the Set size in middleware
             total_plants: res.locals.collectedIds.size,
             memojis,
             current_path: req.path,
+            // user and userMemoji are already in res.locals from middleware!
         });
     } catch (error) {
+        console.error('Account Route Error:', error);
         res.status(500).send('Account error');
     }
 });
 
-// Update chosen memoji
 app.patch('/account/set-memoji', async (req, res) => {
     const { memojiId } = req.body; 
     try {
@@ -298,13 +319,22 @@ app.patch('/account/set-memoji', async (req, res) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ memoji: Number(memojiId) }),
         });
-        if (response.ok) return res.status(200).json({ success: true });
+
+        if (response.ok) {
+            // PROGRESSIVE ENHANCEMENT CHECK:
+            // If the request wants JSON (from fetch), send JSON.
+            // If it's a standard form (browser navigation), redirect.
+            if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+                return res.status(200).json({ success: true });
+            } else {
+                return res.redirect('/account');
+            }
+        }
         res.status(response.status).send('Update failed');
     } catch (error) {
         res.status(500).send('Server Error');
     }
 });
-
 // Update accent color
 app.patch('/account/set-accent', async (req, res) => {
     const { accentColor } = req.body; 
@@ -323,7 +353,7 @@ app.patch('/account/set-accent', async (req, res) => {
 
 // Auth & Other
 app.get('/nieuws', async (req, res) => {
-    const newsData = await fetchData('frankendael_news');
+    const newsData = await fetchData('frankendael_news') || [];
     res.render('nieuws.liquid', {
         news: newsData.map(n => ({ ...n, image: assetUrl(n.image) })),
         zone_type: 'news',
@@ -357,7 +387,7 @@ app.post('/veldverkenner/:zone_slug/:item_slug', async (req, res) => {
 app.post('/login', async (req, res) => {
     const { username } = req.body;
     try {
-        const allUsers = await fetchData('frankendael_users');
+        const allUsers = await fetchData('frankendael_users') || [];
         const foundUser = allUsers.find(u => u.name?.toLowerCase() === username.toLowerCase());
         if (foundUser) {
             res.cookie('userId', foundUser.id, { maxAge: 2_592_000_000, httpOnly: true });
@@ -370,6 +400,5 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// ─── START ────────────────────────────────────────────────────────────────────
-
 app.listen(8000, () => console.log('🚀 Server started: http://localhost:8000'));
+

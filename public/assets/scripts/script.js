@@ -1,24 +1,52 @@
 /**
- * UI & Animation Logic
+ * UI & Animation Logic (Progressive Enhancement)
  */
 const loaderBtn = document.querySelector('.loader');
-const allOptions = document.querySelectorAll('.options-container button');
+const memojiForm = document.getElementById('memojiForm');
 
-const triggerAnimation = (event) => {
-    const clickedBtn = event.currentTarget;
-    const targetUrl = clickedBtn.getAttribute('data-url');
-    
-    if (loaderBtn) {
-        loaderBtn.setAttribute('href', targetUrl);
-        loaderBtn.classList.remove('shownow', 'ready');
-        void loaderBtn.offsetWidth; // Reflow to restart animation
-        loaderBtn.classList.add('shownow');
-    }
-};
+if (memojiForm) {
+    // We listen for clicks on the form and catch them at the button level
+    memojiForm.addEventListener('click', async (event) => {
+        const clickedBtn = event.target.closest('.memoji-choice-btn');
+        if (!clickedBtn) return;
 
-allOptions.forEach(btn => {
-    btn.addEventListener('click', triggerAnimation);
-});
+        // 1. Prevent standard form submission to allow for JS enhancement
+        event.preventDefault();
+
+        const memojiId = clickedBtn.value;
+        const targetUrl = memojiForm.action;
+
+        // 2. Start animation logic
+        if (loaderBtn) {
+            loaderBtn.classList.remove('shownow', 'ready');
+            void loaderBtn.offsetWidth; // Reflow to restart animation
+            loaderBtn.classList.add('shownow');
+        }
+
+        try {
+            // 3. Perform the PATCH via fetch
+            const response = await fetch(targetUrl, {
+                method: 'PATCH',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json' // Crucial for the backend logic check
+                },
+                body: JSON.stringify({ memojiId: memojiId }),
+            });
+
+            if (response.ok) {
+                // 4. Redirect manually to refresh the UI with new data
+                window.location.href = '/account'; 
+            } else {
+                throw new Error("Patch failed");
+            }
+        } catch (error) {
+            console.error("Fetch error, falling back to standard form submission:", error);
+            // Fallback: If fetch fails, submit the form normally (Progressive Enhancement)
+            memojiForm.submit();
+        }
+    });
+}
 
 /**
  * Color Picker & Contrast Logic
@@ -37,8 +65,7 @@ function getLuminance(hex) {
 }
 
 /**
- * AJAX function to talk to your Directus PATCH route
- * Includes Loading, Success, and Error states
+ * AJAX function for Color Picker
  */
 async function syncColorToServer(color) {
     if (!accentForm) return;
@@ -49,8 +76,11 @@ async function syncColorToServer(color) {
     try {
         const response = await fetch(accentForm.action, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accentColor: color }) // Sent as JSON
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ accentColor: color }) 
         });
         
         if (response.ok) {
@@ -77,7 +107,6 @@ function applyColor(color, shouldSync = true) {
     const luminance = getLuminance(color);
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    // Low contrast check
     const isLowContrast = isDarkMode ? luminance < 0.2 : luminance > 0.7;
 
     if (isLowContrast) {
@@ -85,7 +114,6 @@ function applyColor(color, shouldSync = true) {
     } else {
         if (warning) warning.style.display = 'none';
         
-        // Update CSS and LocalStorage immediately for instant feedback
         document.documentElement.style.setProperty('--accent-color', color);
         localStorage.setItem('userAccentColor', color);
 
@@ -99,27 +127,22 @@ function applyColor(color, shouldSync = true) {
  * Initialization & Event Listeners
  */
 if (colorPicker) {
-    // 1. Load saved color from LocalStorage on page load
     const savedColor = localStorage.getItem('userAccentColor');
     if (savedColor) {
         colorPicker.value = savedColor;
         applyColor(savedColor, false); 
     }
 
-    // 2. Live preview (does not save to DB while dragging)
     colorPicker.addEventListener('input', (e) => {
         applyColor(e.target.value, false);
     });
 
-    // 3. Final selection (saves to DB when user finishes picking)
     colorPicker.addEventListener('change', (e) => {
-        // Prevent default form behavior if necessary
         e.preventDefault();
         applyColor(e.target.value, true);
     });
 }
 
-// Update contrast check if user toggles System Dark Mode
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
     if (colorPicker) applyColor(colorPicker.value, false);
 });
