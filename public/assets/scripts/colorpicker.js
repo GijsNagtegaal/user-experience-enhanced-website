@@ -1,4 +1,4 @@
-/* Pruned & DRY Color Picker Logic with Strict Contrast Blocking */
+/* Mobile-Optimized Color Picker Logic */
 
 const accentForm = document.getElementById('accentForm');
 const accentInput = document.getElementById('accentColor'); 
@@ -72,7 +72,7 @@ function getLuminance(hex) {
 async function syncColorToServer(color) {
     if (!accentForm) return;
     try {
-        const response = await fetch(accentForm.action, {
+        await fetch(accentForm.action, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ accentColor: color }) 
@@ -99,23 +99,14 @@ function updateUI(hexColor, colorObj) {
 function applyColor(colorObj, shouldSync = true) {
     const hexColor = colorObj.toHexString();
     const luminance = getLuminance(hexColor);
-    
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const isLowContrast = isDarkMode ? luminance < 0.2 : luminance > 0.7;
 
-    // Toggle the warning text
-    if (contrastWarning) {
-        contrastWarning.style.display = isLowContrast ? 'block' : 'none';
-    }
-
-    // BLOCKER: If contrast is bad, stop here. Do not update UI or Sync.
+    if (contrastWarning) contrastWarning.style.display = isLowContrast ? 'block' : 'none';
     if (isLowContrast) return;
 
     updateUI(hexColor, colorObj);
-
-    if (shouldSync) {
-        syncColorToServer(hexColor);
-    }
+    if (shouldSync) syncColorToServer(hexColor);
 }
 
 function createShadeSpectrum(color) {
@@ -164,9 +155,10 @@ function colorToPos(color) {
     createShadeSpectrum(tinycolor(`hsl ${hue} 1 .5`).toHslString());
 }
 
+/* TOUCH FIX: Improved coordinate finding */
 function getPointerCoords(e, rect) {
-    const pageX = e.pageX || (e.touches ? e.touches[0].pageX : 0);
-    const pageY = e.pageY || (e.touches ? e.touches[0].pageY : 0);
+    const pageX = e.touches ? e.touches[0].pageX : e.pageX;
+    const pageY = e.touches ? e.touches[0].pageY : e.pageY;
     return {
         x: Math.max(0, Math.min(pageX - rect.left - window.scrollX, rect.width)),
         y: Math.max(0, Math.min(pageY - rect.top - window.scrollY, rect.height))
@@ -174,9 +166,8 @@ function getPointerCoords(e, rect) {
 }
 
 function getSpectrumColor(e) {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault(); // Stop mobile scroll
     const coords = getPointerCoords(e, spectrumRect);
-    // Cursor position should still update so user knows where they are dragging
     spectrumCursor.style.left = coords.x + 'px';
     spectrumCursor.style.top = coords.y + 'px';
 
@@ -186,7 +177,7 @@ function getSpectrumColor(e) {
 }
 
 function getHueColor(e) {
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault(); // Stop mobile scroll
     const coords = getPointerCoords(e, hueRect);
     hueCursor.style.top = coords.y + 'px';
 
@@ -195,28 +186,46 @@ function getHueColor(e) {
     applyColor(tinycolor({ h: hue, s: saturation, v: 1 }), false);
 }
 
+/* Unified End Function */
 const endInteraction = () => {
     window.removeEventListener('mousemove', getSpectrumColor);
+    window.removeEventListener('touchmove', getSpectrumColor);
     window.removeEventListener('mousemove', getHueColor);
+    window.removeEventListener('touchmove', getHueColor);
+    
     window.removeEventListener('mouseup', endInteraction);
-    // On release, if the color was blocked, currentColor remains the last valid hex
+    window.removeEventListener('touchend', endInteraction);
+    
     applyColor(currentColor, true);
 };
 
-spectrumCanvas.addEventListener('mousedown', (e) => {
+/* Spectrum Canvas Listeners */
+const startSpectrum = (e) => {
     refreshElementRects();
     getSpectrumColor(e);
     window.addEventListener('mousemove', getSpectrumColor);
+    window.addEventListener('touchmove', getSpectrumColor, { passive: false });
     window.addEventListener('mouseup', endInteraction);
-});
+    window.addEventListener('touchend', endInteraction);
+};
 
-hueCanvas.addEventListener('mousedown', (e) => {
+spectrumCanvas.addEventListener('mousedown', startSpectrum);
+spectrumCanvas.addEventListener('touchstart', startSpectrum, { passive: false });
+
+/* Hue Canvas Listeners */
+const startHue = (e) => {
     refreshElementRects();
     getHueColor(e);
     window.addEventListener('mousemove', getHueColor);
+    window.addEventListener('touchmove', getHueColor, { passive: false });
     window.addEventListener('mouseup', endInteraction);
-});
+    window.addEventListener('touchend', endInteraction);
+};
 
+hueCanvas.addEventListener('mousedown', startHue);
+hueCanvas.addEventListener('touchstart', startHue, { passive: false });
+
+/* Swatch Logic */
 function createSwatch(target, color) {
     const swatch = document.createElement('button');
     swatch.type = "button";
@@ -230,6 +239,7 @@ function createSwatch(target, color) {
     target.appendChild(swatch);
 }
 
+/* Standard Inputs */
 [redIn, greenIn, blueIn].forEach(el => {
     el.addEventListener('input', () => {
         const c = tinycolor({ r: redIn.value, g: greenIn.value, b: blueIn.value });
@@ -249,7 +259,10 @@ modeToggleBtn.addEventListener('click', (e) => {
 
 if (colorPopover) {
     colorPopover.addEventListener('toggle', (e) => {
-        if (e.newState === 'open') requestAnimationFrame(() => new ColorPicker());
+        if (e.newState === 'open') {
+            // Short delay to ensure popover is rendered before rect calculation
+            requestAnimationFrame(() => new ColorPicker());
+        }
     });
 }
 
