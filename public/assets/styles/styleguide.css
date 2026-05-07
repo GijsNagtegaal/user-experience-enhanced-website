@@ -467,6 +467,94 @@ img.portrait {
     border-radius: var(--border-image);
 }
 
+/* Shared  Logic */
+[popover] {
+    /* vars so i can reuse them */
+    --speed: 0.4s;
+    --easing: ease-out;
+    --opacity-start: 0;
+    
+    border: none;
+    padding: 1rem;
+    margin: 0;
+    opacity: var(--opacity-start);
+
+    transition: 
+        opacity var(--speed) var(--easing), 
+        transform var(--speed) var(--easing), 
+        display var(--speed) var(--easing) allow-discrete, 
+        overlay var(--speed) var(--easing) allow-discrete;
+
+    &:popover-open {
+        opacity: 1;
+
+        @starting-style {
+            opacity: var(--opacity-start);
+        }
+    }
+
+    &::backdrop {
+        background-color: rgba(0, 0, 0, 0);
+        transition: 
+            display var(--speed) allow-discrete, 
+            overlay var(--speed) allow-discrete, 
+            background-color var(--speed) var(--easing);
+    }
+
+    &:popover-open::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+        
+        @starting-style {
+            background-color: rgba(0, 0, 0, 0);
+        }
+    }
+}
+
+/* Center Variant */
+.popover-center {
+    --scale-start: 0.9;
+    
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(var(--scale-start));
+    width: 70vw;
+    max-width: 28.125rem;
+    border-radius: 0.625rem;
+    border: solid 2px var(--dark-border);
+
+    &:popover-open {
+        transform: translate(-50%, -50%) scale(1);
+        
+        @starting-style {
+            transform: translate(-50%, -50%) scale(var(--scale-start));
+        }
+    }
+}
+
+/* Bottom Variant */
+.popover-bottom {
+
+    --speed: 0.3s;
+    --easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    background-color: var(--light-background);
+    transform: translateY(100%);
+
+    &:popover-open {
+        transform: translateY(0);
+
+        @starting-style {
+            transform: translateY(100%);
+        }
+    }
+}
+
 @keyframes reveal-sideways {
     from { 
         opacity: 0; 

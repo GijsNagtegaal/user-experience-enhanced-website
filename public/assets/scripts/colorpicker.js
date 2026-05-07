@@ -1,16 +1,12 @@
+/* Pruned & DRY Color Picker Logic with Strict Contrast Blocking */
 
-
-// Get all ui stuff out of the account.liquid
 const accentForm = document.getElementById('accentForm');
 const accentInput = document.getElementById('accentColor'); 
-const addSwatch = document.getElementById('add-swatch');
-const modeToggle = document.getElementById('mode-toggle');
+const modeToggleBtn = document.getElementById('mode-toggle');
 const swatchesContainer = document.querySelector('.default-swatches');
-const userSwatches = document.getElementById('user-swatches');
-const colorIndicator = document.getElementById('color-indicator');
-const warning = document.getElementById('contrastWarning');
+const colorPopover = document.getElementById('colorpicker');
+const contrastWarning = document.getElementById('contrastWarning'); 
 
-// Canvas Elements
 const spectrumCanvas = document.getElementById('spectrum-canvas');
 const spectrumCtx = spectrumCanvas.getContext('2d');
 const spectrumCursor = document.getElementById('spectrum-cursor'); 
@@ -19,7 +15,6 @@ const hueCanvas = document.getElementById('hue-canvas');
 const hueCtx = hueCanvas.getContext('2d');
 const hueCursor = document.getElementById('hue-cursor'); 
 
-// Input Fields
 const rgbFields = document.getElementById('rgb-fields');
 const hexField = document.getElementById('hex-field');
 const redIn = document.getElementById('red');
@@ -27,37 +22,45 @@ const greenIn = document.getElementById('green');
 const blueIn = document.getElementById('blue');
 const hexIn = document.getElementById('hex');
 
-// Global States
 let spectrumRect, hueRect;
 let currentColor = '';
 let hue = 0;
 let saturation = 1;
 let lightness = 0.5;
 
-// init the color pixker
 function ColorPicker() {
-    spectrumCanvas.width = spectrumCanvas.offsetWidth;
-    spectrumCanvas.height = spectrumCanvas.offsetHeight;
-    hueCanvas.width = hueCanvas.offsetWidth;
-    hueCanvas.height = hueCanvas.offsetHeight;
-
+    this.setupCanvas();
     this.addDefaultSwatches();
-    createHueSpectrum();
-    refreshElementRects();
+    this.initColor();
+}
 
-    // Check for saved color in LocalStorage or default
+ColorPicker.prototype.setupCanvas = function() {
+    if (spectrumCanvas.offsetWidth > 0) {
+        spectrumCanvas.width = spectrumCanvas.offsetWidth;
+        spectrumCanvas.height = spectrumCanvas.offsetHeight;
+        hueCanvas.width = hueCanvas.offsetWidth;
+        hueCanvas.height = hueCanvas.offsetHeight;
+    }
+    refreshElementRects();
+    createHueSpectrum();
+};
+
+ColorPicker.prototype.initColor = function() {
     const savedColor = localStorage.getItem('userAccentColor') || '#34a853';
     colorToPos(savedColor);
     applyColor(tinycolor(savedColor), false);
-}
+};
 
-// pre set colors
 ColorPicker.prototype.defaultSwatches = [
     '#FFFFFF', '#FFFB0D', '#0532FF', '#FF9300', '#00F91A', '#FF2700', 
     '#000000', '#686868', '#EE5464', '#D27AEE', '#5BA8C4', '#E64AA9'
 ];
 
-// sync with the db
+ColorPicker.prototype.addDefaultSwatches = function() {
+    swatchesContainer.innerHTML = '';
+    this.defaultSwatches.forEach(color => createSwatch(swatchesContainer, color));
+};
+
 function getLuminance(hex) {
     const rgb = hex.match(/[A-Za-z0-9]{2}/g).map(v => {
         let val = parseInt(v, 16) / 255;
@@ -71,87 +74,77 @@ async function syncColorToServer(color) {
     try {
         const response = await fetch(accentForm.action, {
             method: 'PATCH',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ accentColor: color }) 
         });
-        if (response.ok) console.log("✅ Database updated:", color);
     } catch (err) {
-        console.error("❌ Patch Error:", err);
+        console.error("❌ Sync Error:", err);
     }
 }
 
-function applyColor(colorObj, shouldSync = true) {
-    const hexColor = colorObj.toHexString();
-    const luminance = getLuminance(hexColor);
-    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    // Your contrast thresholds
-    const isLowContrast = isDarkMode ? luminance < 0.2 : luminance > 0.7;
+function updateUI(hexColor, colorObj) {
+    document.documentElement.style.setProperty('--accent-color', hexColor);
+    localStorage.setItem('userAccentColor', hexColor);
+    accentInput.value = hexColor;
 
-    if (isLowContrast) {
-        if (warning) warning.style.display = 'block';
-    } else {
-        if (warning) warning.style.display = 'none';
-
-        document.documentElement.style.setProperty('--accent-color', hexColor);
-        localStorage.setItem('userAccentColor', hexColor);
-
-        accentInput.value = hexColor;
-
-        if (shouldSync) syncColorToServer(hexColor);
-    }
-
-    // user feedback
     currentColor = colorObj;
-    colorIndicator.style.backgroundColor = hexColor;
     spectrumCursor.style.backgroundColor = hexColor;
     hueCursor.style.backgroundColor = `hsl(${colorObj.toHsl().h}, 100%, 50%)`;
     
-    // Update text inputs
     const rgb = colorObj.toRgb();
     redIn.value = rgb.r; greenIn.value = rgb.g; blueIn.value = rgb.b;
     hexIn.value = colorObj.toHex();
 }
 
-// canvas for the full spectrum
+function applyColor(colorObj, shouldSync = true) {
+    const hexColor = colorObj.toHexString();
+    const luminance = getLuminance(hexColor);
+    
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isLowContrast = isDarkMode ? luminance < 0.2 : luminance > 0.7;
+
+    // Toggle the warning text
+    if (contrastWarning) {
+        contrastWarning.style.display = isLowContrast ? 'block' : 'none';
+    }
+
+    // BLOCKER: If contrast is bad, stop here. Do not update UI or Sync.
+    if (isLowContrast) return;
+
+    updateUI(hexColor, colorObj);
+
+    if (shouldSync) {
+        syncColorToServer(hexColor);
+    }
+}
+
 function createShadeSpectrum(color) {
-    const ctx = spectrumCtx;
-    ctx.clearRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+    spectrumCtx.clearRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+    spectrumCtx.fillStyle = color || '#f00';
+    spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
 
-    ctx.fillStyle = color || '#f00';
-    ctx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
-
-    const whiteGrad = ctx.createLinearGradient(0, 0, spectrumCanvas.width, 0);
+    const whiteGrad = spectrumCtx.createLinearGradient(0, 0, spectrumCanvas.width, 0);
     whiteGrad.addColorStop(0, "#fff");
     whiteGrad.addColorStop(1, "transparent");
-    ctx.fillStyle = whiteGrad;
-    ctx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+    spectrumCtx.fillStyle = whiteGrad;
+    spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
 
-    const blackGrad = ctx.createLinearGradient(0, 0, 0, spectrumCanvas.height);
+    const blackGrad = spectrumCtx.createLinearGradient(0, 0, 0, spectrumCanvas.height);
     blackGrad.addColorStop(0, "transparent");
     blackGrad.addColorStop(1, "#000");
-    ctx.fillStyle = blackGrad;
-    ctx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+    spectrumCtx.fillStyle = blackGrad;
+    spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
 }
 
 function createHueSpectrum() {
-    const ctx = hueCtx;
-    const hueGrad = ctx.createLinearGradient(0, 0, 0, hueCanvas.height);
-    hueGrad.addColorStop(0.00, "hsl(0,100%,50%)");
-    hueGrad.addColorStop(0.17, "hsl(298.8, 100%, 50%)");
-    hueGrad.addColorStop(0.33, "hsl(241.2, 100%, 50%)");
-    hueGrad.addColorStop(0.50, "hsl(180, 100%, 50%)");
-    hueGrad.addColorStop(0.67, "hsl(118.8, 100%, 50%)");
-    hueGrad.addColorStop(0.83, "hsl(61.2,100%,50%)");
-    hueGrad.addColorStop(1.00, "hsl(360,100%,50%)");
-    ctx.fillStyle = hueGrad;
-    ctx.fillRect(0, 0, hueCanvas.width, hueCanvas.height);
+    const hueGrad = hueCtx.createLinearGradient(0, 0, 0, hueCanvas.height);
+    const stops = [0, 0.17, 0.33, 0.5, 0.67, 0.83, 1];
+    const hues = [0, 298.8, 241.2, 180, 118.8, 61.2, 360];
+    stops.forEach((stop, i) => hueGrad.addColorStop(stop, `hsl(${hues[i]}, 100%, 50%)`));
+    hueCtx.fillStyle = hueGrad;
+    hueCtx.fillRect(0, 0, hueCanvas.width, hueCanvas.height);
 }
 
-// refresh and color values
 function refreshElementRects() {
     spectrumRect = spectrumCanvas.getBoundingClientRect();
     hueRect = hueCanvas.getBoundingClientRect();
@@ -159,72 +152,60 @@ function refreshElementRects() {
 
 function colorToPos(color) {
     const c = tinycolor(color);
-    const hsl = c.toHsl();
     const hsv = c.toHsv();
-    
-    hue = hsl.h;
+    hue = hsv.h;
     saturation = hsv.s;
-    lightness = c.toHsl().l;
 
-    const x = spectrumRect.width * hsv.s;
-    const y = spectrumRect.height * (1 - hsv.v);
-    const hueY = hueRect.height - ((hue / 360) * hueRect.height);
+    refreshElementRects();
+    spectrumCursor.style.left = (spectrumRect.width * hsv.s) + 'px';
+    spectrumCursor.style.top = (spectrumRect.height * (1 - hsv.v)) + 'px';
+    hueCursor.style.top = (hueRect.height - ((hue / 360) * hueRect.height)) + 'px';
     
-    spectrumCursor.style.left = x + 'px';
-    spectrumCursor.style.top = y + 'px';
-    hueCursor.style.top = hueY + 'px';
-    
-    createShadeSpectrum(tinycolor('hsl ' + hue + ' 1 .5').toHslString());
+    createShadeSpectrum(tinycolor(`hsl ${hue} 1 .5`).toHslString());
 }
 
-// get user position on the canvas
+function getPointerCoords(e, rect) {
+    const pageX = e.pageX || (e.touches ? e.touches[0].pageX : 0);
+    const pageY = e.pageY || (e.touches ? e.touches[0].pageY : 0);
+    return {
+        x: Math.max(0, Math.min(pageX - rect.left - window.scrollX, rect.width)),
+        y: Math.max(0, Math.min(pageY - rect.top - window.scrollY, rect.height))
+    };
+}
+
 function getSpectrumColor(e) {
     e.preventDefault();
-    let x = (e.pageX || e.touches[0].pageX) - spectrumRect.left - window.scrollX;
-    let y = (e.pageY || e.touches[0].pageY) - spectrumRect.top - window.scrollY;
+    const coords = getPointerCoords(e, spectrumRect);
+    // Cursor position should still update so user knows where they are dragging
+    spectrumCursor.style.left = coords.x + 'px';
+    spectrumCursor.style.top = coords.y + 'px';
 
-    x = Math.max(0, Math.min(x, spectrumRect.width));
-    y = Math.max(0, Math.min(y, spectrumRect.height));
-
-    const s = x / spectrumRect.width;
-    const v = 1 - (y / spectrumRect.height);
-    
-    const color = tinycolor({ h: hue, s: s, v: v });
-    
-    spectrumCursor.style.left = x + 'px';
-    spectrumCursor.style.top = y + 'px';
-    
-    applyColor(color, false);
+    const s = coords.x / spectrumRect.width;
+    const v = 1 - (coords.y / spectrumRect.height);
+    applyColor(tinycolor({ h: hue, s: s, v: v }), false);
 }
 
 function getHueColor(e) {
     e.preventDefault();
-    let y = (e.pageY || e.touches[0].pageY) - hueRect.top - window.scrollY;
-    y = Math.max(0, Math.min(y, hueRect.height));
+    const coords = getPointerCoords(e, hueRect);
+    hueCursor.style.top = coords.y + 'px';
 
-    hue = 360 - (360 * (y / hueRect.height));
-    const color = tinycolor({ h: hue, s: saturation, v: lightness });
-    
-    createShadeSpectrum(tinycolor({ h: hue, s: 1, v: 1 }).toHslString());
-    hueCursor.style.top = y + 'px';
-    
-    applyColor(color, false);
+    hue = 360 - (360 * (coords.y / hueRect.height));
+    createShadeSpectrum(tinycolor(`hsl ${hue} 1 .5`).toHslString());
+    applyColor(tinycolor({ h: hue, s: saturation, v: 1 }), false);
 }
 
 const endInteraction = () => {
-    spectrumCursor.classList.remove('dragging');
-    hueCursor.classList.remove('dragging');
     window.removeEventListener('mousemove', getSpectrumColor);
     window.removeEventListener('mousemove', getHueColor);
     window.removeEventListener('mouseup', endInteraction);
-    
+    // On release, if the color was blocked, currentColor remains the last valid hex
     applyColor(currentColor, true);
 };
 
 spectrumCanvas.addEventListener('mousedown', (e) => {
     refreshElementRects();
     getSpectrumColor(e);
-    spectrumCursor.classList.add('dragging');
     window.addEventListener('mousemove', getSpectrumColor);
     window.addEventListener('mouseup', endInteraction);
 });
@@ -232,16 +213,14 @@ spectrumCanvas.addEventListener('mousedown', (e) => {
 hueCanvas.addEventListener('mousedown', (e) => {
     refreshElementRects();
     getHueColor(e);
-    hueCursor.classList.add('dragging');
     window.addEventListener('mousemove', getHueColor);
     window.addEventListener('mouseup', endInteraction);
 });
 
-// add swatches
 function createSwatch(target, color) {
     const swatch = document.createElement('button');
     swatch.type = "button";
-    swatch.classList.add('swatch');
+    swatch.className = 'swatch';
     swatch.style.backgroundColor = color;
     swatch.addEventListener('click', () => {
         const c = tinycolor(color);
@@ -251,41 +230,27 @@ function createSwatch(target, color) {
     target.appendChild(swatch);
 }
 
-ColorPicker.prototype.addDefaultSwatches = function() {
-    this.defaultSwatches.forEach(color => createSwatch(swatchesContainer, color));
-};
-
 [redIn, greenIn, blueIn].forEach(el => {
     el.addEventListener('input', () => {
         const c = tinycolor({ r: redIn.value, g: greenIn.value, b: blueIn.value });
-        colorToPos(c);
-        applyColor(c, true);
+        if (c.isValid()) { colorToPos(c); applyColor(c, true); }
     });
 });
 
 hexIn.addEventListener('input', () => {
     const c = tinycolor(hexIn.value);
-    if (c.isValid()) {
-        colorToPos(c);
-        applyColor(c, true);
-    }
+    if (c.isValid()) { colorToPos(c); applyColor(c, true); }
 });
 
-addSwatch.addEventListener('click', (e) => {
+modeToggleBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    createSwatch(userSwatches, currentColor.toHexString());
+    [rgbFields, hexField].forEach(el => el.classList.toggle('active'));
 });
 
-modeToggle.addEventListener('click', (e) => {
-    e.preventDefault();
-    rgbFields.classList.toggle('active');
-    hexField.classList.toggle('active');
-});
+if (colorPopover) {
+    colorPopover.addEventListener('toggle', (e) => {
+        if (e.newState === 'open') requestAnimationFrame(() => new ColorPicker());
+    });
+}
 
-// sync on system theme change
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    applyColor(currentColor, false);
-});
-
-// Run                         
-new ColorPicker();                 
+new ColorPicker();

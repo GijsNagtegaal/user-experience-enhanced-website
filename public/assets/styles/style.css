@@ -227,34 +227,13 @@ section.zones-popover {
     height: 40dvh;
     align-items: center;
     justify-content: center;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     border: none;
     border-radius: 0.625rem;
     padding: 1rem;
-    opacity: 0;
     border: solid 2px var(--dark-border);
-    transform: translate(-50%, -50%) scale(0.9);
-    transition: 
-        opacity 0.3s ease-out, 
-        transform 0.3s ease-out, 
-        display 0.3s allow-discrete, 
-        overlay 0.3s allow-discrete;
 
     button {
         cursor: pointer;
-    }
-
-    &:popover-open {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-
-        @starting-style {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.9);
-        }
     }
 
     header {
@@ -316,34 +295,12 @@ section.uitleg-popover {
     height: 60dvh;
     align-items: center;
     justify-content: center;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     border: none;
     border-radius: 0.625rem;
     padding: 1rem;
-    opacity: 1;
-    border: solid 2px var(--dark-border);
-    transform: translate(-50%, -50%) scale(0.9);
-    transition: 
-        opacity 0.3s ease-out, 
-        transform 0.3s ease-out, 
-        display 0.3s allow-discrete, 
-        overlay 0.3s allow-discrete;
-
+    
     button {
         cursor: pointer;
-    }
-
-    &:popover-open {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-
-        @starting-style {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.9);
-        }
     }
 }
 
@@ -752,24 +709,6 @@ main.account {
     }
 
     section[popover] {
-
-        top: auto; 
-        width: 100%;
-        min-height: 40dvh;
-        height: auto;
-        max-height: 60dvh;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        border: none;
-        background-color: var(--light-background);
-        overflow: auto;
-
-        &::backdrop {
-            background-color: var(--light-background);
-            opacity: .7;
-        }
-
         header {
             display: flex;
             width: 100%;
@@ -791,6 +730,11 @@ main.account {
                 }
             }
         }
+    }
+
+    section.memoji[popover] {
+        min-height: 40dvh;
+        background-color: var(--light-background);
 
         form.memo {
 
@@ -857,11 +801,6 @@ main.account {
             }
         }
     }
-    
-}
-
-.memoji {
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 
@@ -1024,18 +963,6 @@ footer.main-footer {
 /***********************************
 Animations
 ***********************************/
-
-.zones-popover {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.9);
-    
-    /* to transition the 'display' and 'overlay' properties */
-    transition: 
-        opacity 0.5s ease-out,  
-        transform 0.5s ease-out, 
-        display 0.5s allow-discrete, 
-        overlay 0.5s allow-discrete;
-}
 
 @keyframes popscale {
     0% {

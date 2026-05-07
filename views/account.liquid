@@ -13,7 +13,72 @@
         heading_level: 1,
         content: welcome_message,
     %}
-    <section class="popover" popover="auto" id="profiselector">
+
+    <!-- custom color picker popover -->
+    <section id="colorpicker" popover="auto" class="accent-settings popover-bottom">
+        <header>
+            {% render 'partials/general-heading.liquid',
+                heading_level: 3,
+                content: "Kies jouw accentkleur",
+            %}
+            <button popovertarget="colorpicker" class="close-btn">
+                <svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.2663 36.4167L9.58301 33.7334L20.3163 23L9.58301 12.2667L12.2663 9.58337L22.9997 20.3167L33.733 9.58337L36.4163 12.2667L25.683 23L36.4163 33.7334L33.733 36.4167L22.9997 25.6834L12.2663 36.4167Z" fill="currentColor"/>
+                </svg>
+                <span>Sluiten</span>
+            </button>
+        </header>
+
+        <form class="colorpicker color-picker-panel" id="accentForm" action="/account/set-accent" method="POST">
+            <!-- Default colors only -->
+            <fieldset class="panel-row">
+                <menu class="swatches default-swatches"></menu>
+                <button type="button" class="button eyedropper">Get Color</button>
+            </fieldset>
+
+            <!-- Visual canvas -->
+            <fieldset class="panel-row">
+                <figure class="spectrum-map">
+                    <button type="button" id="spectrum-cursor" class="color-cursor"></button>
+                    <canvas id="spectrum-canvas"></canvas>
+                </figure>
+                <figure class="hue-map">
+                    <button type="button" id="hue-cursor" class="color-cursor"></button>
+                    <canvas id="hue-canvas"></canvas>
+                </figure>
+            </fieldset>
+
+            <!-- Manual inputs -->
+            <fieldset class="panel-row">
+                <input type="color" id="accentColor" name="accentColor" value="#34a853" hidden>
+
+                <section id="rgb-fields" class="field-group value-fields rgb-fields active">
+                    <label class="field-group">
+                        <span class="field-label">R:</span>
+                        <input type="number" max="255" min="0" id="red" class="field-input">
+                    </label>
+                    <label class="field-group">
+                        <span class="field-label">G:</span>
+                        <input type="number" max="255" min="0" id="green" class="field-input">
+                    </label>
+                    <label class="field-group">
+                        <span class="field-label">B:</span>
+                        <input type="number" max="255" min="0" id="blue" class="field-input">
+                    </label>
+                </section>
+
+                <section id="hex-field" class="field-group value-fields hex-field">
+                    <label for="hex" class="field-label">Hex:</label>
+                    <input type="text" id="hex" class="field-input">
+                </section>
+
+                <button type="button" id="mode-toggle" class="button mode-toggle">Mode</button>
+            </fieldset>
+        </form>
+    </section>
+            
+    <!-- custom memoji picker popover -->
+    <section class="popover memoji popover-bottom" popover="auto" id="profiselector">
         <header>
             {% render 'partials/general-heading.liquid',
                 heading_level: 3,
@@ -41,6 +106,7 @@
 
         <footer></footer>
     </section>
+
     <section class="user-data">
         <!-- Update the main profile image section -->
         <figure>
@@ -104,7 +170,7 @@
             <summary>Jouw badges</summary>
             <p>hier komen jouw badges</p>
         </details>
-        
+
         <details>
             <summary>Jouw voorkeuren</summary>
             <p>hier komen jouw voorkeuren</p>
@@ -117,74 +183,8 @@
             <input type="radio" id="color-mode-auto" name="color-mode" checked="checked" />
             <label for="color-mode-auto" title="Use system light/dark mode setting">System</label>
 
-            <!-- custom color picker -->
-            <section class="accent-settings">
-                <h2>Persoonlijke Stijl</h2>
-
-                <form class="colorpicker" id="accentForm" action="/account/set-accent" method="POST" class="color-picker-panel">
-
-                    <!-- default colors -->
-                    <fieldset class="panel-row">
-                        <menu class="swatches default-swatches"></menu>
-                        <button type="button" class="button eyedropper">Get Color</button>
-                    </fieldset>
-
-                    <!-- visual canvas -->
-                    <fieldset class="panel-row">
-                        <figure class="spectrum-map">
-                            <button type="button" id="spectrum-cursor" class="color-cursor"></button>
-                            <canvas id="spectrum-canvas"></canvas>
-                        </figure>
-                        <figure class="hue-map">
-                            <button type="button" id="hue-cursor" class="color-cursor"></button>
-                            <canvas id="hue-canvas"></canvas>
-                        </figure>
-                    </fieldset>
-
-                    <!-- manual inputs -->
-                    <fieldset class="panel-row">
-                        <!-- The original input is kept for form submission -->
-                        <input type="color" id="accentColor" name="accentColor" value="#34a853" hidden>
-
-                        <section id="rgb-fields" class="field-group value-fields rgb-fields active">
-                            <label class="field-group">
-                                <span class="field-label">R:</span>
-                                <input type="number" max="255" min="0" id="red" class="field-input rgb-input">
-                            </label>
-                            <label class="field-group">
-                                <span class="field-label">G:</span>
-                                <input type="number" max="255" min="0" id="green" class="field-input rgb-input">
-                            </label>
-                            <label class="field-group">
-                                <span class="field-label">B:</span>
-                                <input type="number" max="255" min="0" id="blue" class="field-input rgb-input">
-                            </label>
-                        </section>
-
-                        <section id="hex-field" class="field-group value-fields hex-field">
-                            <label for="hex" class="field-label">Hex:</label>
-                            <input type="text" id="hex" class="field-input">
-                        </section>
-
-                        <button type="button" id="mode-toggle" class="button mode-toggle">Mode</button>
-                    </fieldset>
-
-                    <!-- user based color additions -->
-                    <footer class="panel-row">
-                        <h3 class="panel-header">User Colors</h3>
-                        <menu id="user-swatches" class="swatches custom-swatches"></menu>
-                        
-                        <button type="button" id="add-swatch" class="button add-swatch">
-                            <span id="color-indicator" class="color-indicator"></span>
-                            <span>Add to Swatches</span>
-                        </button>
-                    </footer>
-
-                    <output id="contrastWarning" style="display:none; color: #d93025; margin-top: 10px;">
-                        ⚠️ Deze kleur is niet goed leesbaar in de huidige weergave.
-                    </output>
-                </form>
-            </section>
+            
+            <button popovertarget="colorpicker">Kies je eigen app kleur</button>
             
         </details>
         <form action="/account" method="POST">
