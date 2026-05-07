@@ -18,6 +18,12 @@ Middels GET-verzoeken zorg ik ervoor dat de app altijd de meest actuele plantken
 
 Ook heb ik mij deze script gefocussed op 2 PATCH functies, het selecteren van een memoji en zelf de accent kleur van de app instellen. Dat werkt als volgt:
 
+<img width="394" height="742" alt="Screenshot 2026-05-06 at 11 33 59" src="https://github.com/user-attachments/assets/014267b1-7a0f-46f0-8b48-bf10845f3e7f" />
+<img width="402" height="735" alt="Screenshot 2026-05-06 at 11 34 04" src="https://github.com/user-attachments/assets/9489a4f7-fabe-442d-b4b6-8a03a78f31e8" />
+<img width="415" height="751" alt="Screenshot 2026-05-06 at 11 34 07" src="https://github.com/user-attachments/assets/5d686195-b61c-4f52-8944-a20365f9b9e3" />
+<img width="372" height="65" alt="Screenshot 2026-05-06 at 11 34 18" src="https://github.com/user-attachments/assets/9e467bf4-5231-412d-bd08-cb4c5eac9d37" />
+<img width="383" height="117" alt="Screenshot 2026-05-06 at 11 34 29" src="https://github.com/user-attachments/assets/9ed769b1-0d43-46ad-b267-c2352ab76346" />
+<img width="366" height="70" alt="Screenshot 2026-05-06 at 11 34 34" src="https://github.com/user-attachments/assets/40db5075-7d72-4506-bbd7-1cee56647c25" />
 
 
 Developer
@@ -31,18 +37,6 @@ Developer
 Hieronder is een video te zien hoe de opdrachten flow werkt:
 
 https://github.com/user-attachments/assets/101e9597-13df-40ca-96e8-2285e6c9f39d
-
-Verder heb ik me gefocussed op de algemene flow van de gebruiker. Hieronder een aantal afbeeldingen over hoe de ui er nu uit ziet:
-
-Ik heb een ander design gemaakt en gekozen in overleg met de opdrachtgever, 
-dit omdat ik aan meerdere personen heb gevraagd of zij het duidelijk vonden hoe je opdrachten kan doen en meer informatie kan vinden over een plant. 
-Uiteindelijk ben ik op dit design gekomen:
-
-
-<img width="698" height="445" alt="Screenshot 2026-04-02 at 13 22 40" src="https://github.com/user-attachments/assets/7ce615ed-3767-4032-a380-d0e78020604f" />
-<img width="628" height="722" alt="Screenshot 2026-04-02 at 13 22 35" src="https://github.com/user-attachments/assets/ec7cd1b1-b09a-4b21-b245-c07dfe29d4a6" />
-
-
 
 De live site is hier te vinden: https://user-experience-enhanced-website-hiu8.onrender.com
 
