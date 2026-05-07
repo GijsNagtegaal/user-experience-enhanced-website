@@ -517,35 +517,43 @@ img.portrait {
 
 
 
-/* Loading State */
-.color-picker-wrapper.is-loading {
-    cursor: wait;
+/* Memoji Grid Loading */
+.memoji-grid {
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+#memojiForm.loading-state .memoji-grid {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: blur(2px);
+}
+
+/* Color Picker Spinner */
+.color-picker-wrapper {
     position: relative;
+    display: inline-block;
 }
 
-.color-picker-wrapper.is-loading::after {
-    content: "⌛"; /* You can replace this with a CSS spinner */
+.color-picker-wrapper.is-syncing::after {
+    content: "";
     position: absolute;
-    right: -25px;
+    right: -30px;
     top: 50%;
     transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
 }
 
-/* Success State */
-.color-picker-wrapper.is-success input {
-    outline: 2px solid #34a853;
-    transition: outline 0.3s ease;
+@keyframes spin {
+    to { transform: translateY(-50%) rotate(360deg); }
 }
 
-.color-picker-wrapper.is-success::after {
-    content: "✅";
-    position: absolute;
-    right: -25px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-/* Error State */
-.color-picker-wrapper.is-error input {
-    outline: 2px solid #d93025;
+/* View Transition Polish */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.4s;
 }

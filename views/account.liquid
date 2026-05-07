@@ -27,7 +27,7 @@
             </button>
         </header>
 
-        <form id="memojiForm" method="POST" action="/account/set-memoji?_method=PATCH">
+        <form class="memo" id="memojiForm" method="POST" action="/account/set-memoji?_method=PATCH">
             <ul class="memoji-grid">
                 {% for item in memojis %}
                     <li>
@@ -104,6 +104,7 @@
             <summary>Jouw badges</summary>
             <p>hier komen jouw badges</p>
         </details>
+        
         <details>
             <summary>Jouw voorkeuren</summary>
             <p>hier komen jouw voorkeuren</p>
@@ -116,17 +117,72 @@
             <input type="radio" id="color-mode-auto" name="color-mode" checked="checked" />
             <label for="color-mode-auto" title="Use system light/dark mode setting">System</label>
 
+            <!-- custom color picker -->
             <section class="accent-settings">
                 <h2>Persoonlijke Stijl</h2>
-                <!-- Added form with action pointing to your patch route -->
-                <form id="accentForm" action="/account/set-accent" method="POST">
-                    <div class="color-picker-wrapper">
-                        <label for="accentColor">Kies je accentkleur:</label>
-                        <input type="color" id="accentColor" name="accentColor" value="#34a853">
-                    </div>
-                    <p id="contrastWarning" style="display:none; color: #d93025; margin-top: 10px;">
+
+                <form class="colorpicker" id="accentForm" action="/account/set-accent" method="POST" class="color-picker-panel">
+
+                    <!-- default colors -->
+                    <fieldset class="panel-row">
+                        <menu class="swatches default-swatches"></menu>
+                        <button type="button" class="button eyedropper">Get Color</button>
+                    </fieldset>
+
+                    <!-- visual canvas -->
+                    <fieldset class="panel-row">
+                        <figure class="spectrum-map">
+                            <button type="button" id="spectrum-cursor" class="color-cursor"></button>
+                            <canvas id="spectrum-canvas"></canvas>
+                        </figure>
+                        <figure class="hue-map">
+                            <button type="button" id="hue-cursor" class="color-cursor"></button>
+                            <canvas id="hue-canvas"></canvas>
+                        </figure>
+                    </fieldset>
+
+                    <!-- manual inputs -->
+                    <fieldset class="panel-row">
+                        <!-- The original input is kept for form submission -->
+                        <input type="color" id="accentColor" name="accentColor" value="#34a853" hidden>
+
+                        <section id="rgb-fields" class="field-group value-fields rgb-fields active">
+                            <label class="field-group">
+                                <span class="field-label">R:</span>
+                                <input type="number" max="255" min="0" id="red" class="field-input rgb-input">
+                            </label>
+                            <label class="field-group">
+                                <span class="field-label">G:</span>
+                                <input type="number" max="255" min="0" id="green" class="field-input rgb-input">
+                            </label>
+                            <label class="field-group">
+                                <span class="field-label">B:</span>
+                                <input type="number" max="255" min="0" id="blue" class="field-input rgb-input">
+                            </label>
+                        </section>
+
+                        <section id="hex-field" class="field-group value-fields hex-field">
+                            <label for="hex" class="field-label">Hex:</label>
+                            <input type="text" id="hex" class="field-input">
+                        </section>
+
+                        <button type="button" id="mode-toggle" class="button mode-toggle">Mode</button>
+                    </fieldset>
+
+                    <!-- user based color additions -->
+                    <footer class="panel-row">
+                        <h3 class="panel-header">User Colors</h3>
+                        <menu id="user-swatches" class="swatches custom-swatches"></menu>
+                        
+                        <button type="button" id="add-swatch" class="button add-swatch">
+                            <span id="color-indicator" class="color-indicator"></span>
+                            <span>Add to Swatches</span>
+                        </button>
+                    </footer>
+
+                    <output id="contrastWarning" style="display:none; color: #d93025; margin-top: 10px;">
                         ⚠️ Deze kleur is niet goed leesbaar in de huidige weergave.
-                    </p>
+                    </output>
                 </form>
             </section>
             
