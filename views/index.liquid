@@ -1,5 +1,4 @@
-{% render 'partials/head.liquid'
-%}
+{% render 'partials/head.liquid', user: user %}
 
 {% include 'partials/calcs.liquid', 
     birthdate: user.birthdate 

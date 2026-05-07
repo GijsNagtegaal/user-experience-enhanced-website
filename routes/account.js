@@ -71,16 +71,32 @@ router.patch('/account/set-memoji', async (req, res) => {
 
 router.patch('/account/set-accent', async (req, res) => {
     const { accentColor } = req.body; 
+    console.log('[accent] PATCH /account/set-accent', {
+        userId: res.locals.userId,
+        accentColor,
+        contentType: req.headers['content-type'],
+        accept: req.headers.accept
+    });
     try {
         const response = await fetch(`${api.API_BASE}/frankendael_users/${res.locals.userId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ accent_color: accentColor }),
         });
-        if (response.ok) return res.status(200).json({ success: true });
-        res.status(response.status).json({ error: 'Update failed' });
+        let directusBody = null;
+        try { directusBody = await response.clone().json(); } catch { directusBody = null; }
+
+        console.log('[accent] directus response', {
+            ok: response.ok,
+            status: response.status,
+            body: directusBody
+        });
+
+        if (response.ok) return res.status(200).json({ success: true, userId: res.locals.userId, accentColor });
+        res.status(response.status).json({ error: 'Update failed', userId: res.locals.userId, accentColor, directusBody });
     } catch (error) {
-        res.status(500).json({ error: 'Server connection failed' });
+        console.error('[accent] server error', error);
+        res.status(500).json({ error: 'Server connection failed', userId: res.locals.userId, accentColor });
     }
 });
 

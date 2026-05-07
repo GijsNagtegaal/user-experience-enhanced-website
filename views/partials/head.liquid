@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+    <style>
+        {% assign user_accent = user.accent_color | default: '#34a853' %}
+        :root { --accent-color: {{ user_accent }}; }
+    </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     
@@ -50,5 +54,5 @@
     <script src="/gsap/MotionPathPlugin.min.js" defer></script>
     <script src="/assets/scripts/animations.js" defer></script>
 </head>
-    
-<body>
+
+<body data-user-accent="{{ user_accent }}">

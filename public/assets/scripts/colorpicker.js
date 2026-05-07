@@ -46,9 +46,20 @@ ColorPicker.prototype.setupCanvas = function() {
 };
 
 ColorPicker.prototype.initColor = function() {
-    const savedColor = localStorage.getItem('userAccentColor') || '#34a853';
+    const dbColor = document.body?.dataset?.userAccent;
+    const savedColor = dbColor || localStorage.getItem('userAccentColor') || '#34a853';
+
+    console.log('[accent] init', {
+        hasAccentForm: Boolean(accentForm),
+        accentFormAction: accentForm?.action,
+        dbColor,
+        localStorageColor: localStorage.getItem('userAccentColor'),
+        chosen: savedColor
+    });
+
     colorToPos(savedColor);
     applyColor(tinycolor(savedColor), false);
+    if (dbColor) localStorage.setItem('userAccentColor', dbColor);
 };
 
 ColorPicker.prototype.defaultSwatches = [
@@ -70,15 +81,39 @@ function getLuminance(hex) {
 }
 
 async function syncColorToServer(color) {
-    if (!accentForm) return;
+    if (!accentForm) {
+        console.warn('[accent] sync skipped: #accentForm not found');
+        return;
+    }
+
+    console.log('[accent] sync start', {
+        url: accentForm.action,
+        method: 'PATCH',
+        payload: { accentColor: color }
+    });
+
     try {
-        await fetch(accentForm.action, {
+        const response = await fetch(accentForm.action, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ accentColor: color }) 
         });
+
+        let responseBody = null;
+        try {
+            responseBody = await response.clone().json();
+        } catch {
+            try { responseBody = await response.clone().text(); } catch { responseBody = null; }
+        }
+
+        console.log('[accent] sync done', {
+            ok: response.ok,
+            status: response.status,
+            statusText: response.statusText,
+            body: responseBody
+        });
     } catch (err) {
-        console.error("❌ Sync Error:", err);
+        console.error('[accent] sync error', err);
     }
 }
 
