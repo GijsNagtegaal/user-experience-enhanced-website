@@ -331,7 +331,7 @@ span.bold {
 
 .link {
     text-decoration: underline;
-    color: var(--active-link);
+    color: var(--accent-color);
 }
 
 .badge {

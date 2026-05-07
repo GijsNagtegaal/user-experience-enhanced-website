@@ -76,7 +76,7 @@ main.home {
         color: var(--dark-text);
 
         a {
-            color: var(--active-link);
+            color: var(--accent-color);
             text-decoration: underline;
             font-weight: 900;
             display: inline;
@@ -646,7 +646,7 @@ main.collectie {
             }
 
             &.active {
-                background-color: var(--active-link);
+                background-color: var(--accent-color);
                 color: var(--light-text);
             }
         }
@@ -920,15 +920,15 @@ footer.main-footer {
 
             &.active {
 
-                color: var(--active-link);
+                color: var(--accent-color);
 
                 svg {
                     path {
-                        color: var(--active-link);
-                        fill: var(--active-link);
+                        color: var(--accent-color);
+                        fill: var(--accent-color);
                     }
-                    color: var(--active-link);
-                    fill: var(--active-link);
+                    color: var(--accent-color);
+                    fill: var(--accent-color);
                 }
             }
 

@@ -456,7 +456,7 @@ section.detailpage {
 
             a {
                 display: inline;
-                color: var(--active-link);
+                color: var(--accent-color);
                 text-decoration: underline;
                 
             }
