@@ -102,8 +102,6 @@ body {
     --body-background-green: #fe8b5038;
 
     /* accents and borders */
-    --active: light-dark(#356c51, #356c51);
-    --active-link: light-dark(#356c51, #00c365);
     --light-border:#F7F7F7;
     --lighter-border:#B0B0B0;
     --dark-border: light-dark(#1b1b1b,#F7F7F7);
