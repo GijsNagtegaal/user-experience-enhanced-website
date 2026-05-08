@@ -1,4 +1,4 @@
-/* Mobile-Optimized Color Picker Logic */
+/* Select all the objects from the ui */
 
 const accentForm = document.getElementById('accentForm');
 const accentInput = document.getElementById('accentColor'); 
@@ -28,6 +28,7 @@ let hue = 0;
 let saturation = 1;
 let lightness = 0.5;
 
+/* Setup the colorpicker */
 function ColorPicker() {
     this.setupCanvas();
     this.addDefaultSwatches();

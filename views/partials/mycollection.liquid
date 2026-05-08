@@ -11,8 +11,16 @@
         <li class="{{ plant.main_zone.type }}">
             <a href="/collectie/{{ plant.slug }}">
                 <article>
-                    <h2>{{ plant.name }}</h2>
-                    <h3 class="italic">{{ plant.latin | truncate: 20 }}</h3>
+                    {% render 'partials/general-heading.liquid',
+                        heading_level: 2,
+                        content: plant.name,
+                        my_class: "italic"
+                    %}
+                    {% render 'partials/general-heading.liquid',
+                        heading_level: 3,
+                        content: plant.latin | truncate: 20,
+                        my_class: "italic"
+                    %}
                 </article>
                 {% render 'partials/picture.liquid',
                     imagesrc: plant.in_bloom,

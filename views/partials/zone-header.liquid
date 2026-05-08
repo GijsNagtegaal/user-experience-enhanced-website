@@ -3,7 +3,11 @@
         current_path: current_path,
         class: "zone",
     %}
-    <h1>{{ zone_name }}</h1>
+
+    {% render 'partials/general-heading.liquid',
+        heading_level: 1,
+        content: zone_name,
+    %}
     <p>Hier komt en leuk stukje tekst over de zone</p>
     <div>
         <label for="opdracht-{{ zone_name }}-{{ zone_slug }}">{{ stats.collected }}/{{ stats.total }}</label>

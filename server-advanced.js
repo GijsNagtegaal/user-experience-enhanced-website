@@ -18,7 +18,7 @@ const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const engine = new Liquid();
-app.engine('liquid', engine.express());b
+app.engine('liquid', engine.express());
 app.set('views', './views').set('view engine', 'liquid');
 
 app.use(cookieParser());
