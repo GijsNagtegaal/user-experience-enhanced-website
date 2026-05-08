@@ -14,11 +14,10 @@
                     {% render 'partials/general-heading.liquid',
                         heading_level: 2,
                         content: plant.name,
-                        my_class: "italic"
                     %}
                     {% render 'partials/general-heading.liquid',
                         heading_level: 3,
-                        content: plant.latin | truncate: 20,
+                        content: plant.latin,
                         my_class: "italic"
                     %}
                 </article>

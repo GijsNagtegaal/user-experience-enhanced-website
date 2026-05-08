@@ -4,6 +4,11 @@
         <a href="/collectie/in_bloom" class="filter-btn {% if current_path == '/collectie/in_bloom' %}active{% endif %}">
             In Bloei
         </a>
+        {% render 'partials/link.liquid',
+            standard_class: "filter-btn",
+            if_class: if_class,
+            content: "In Bloei",
+        %}
         <a href="/collectie/not_in_bloom" class="filter-btn {% if current_path == '/collectie/not_in_bloom' %}active{% endif %}">
             Niet in Bloei
         </a>

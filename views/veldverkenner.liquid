@@ -231,9 +231,10 @@
     {% comment %} Section with the popover for the zones {% endcomment %}
     <section popover id="zones" class="zones-popover popover-center">
         <header>
-            <h3>
-                Zones
-            </h3>
+            {% render 'partials/general-heading.liquid',
+                heading_level: 3,
+                content: "zones",
+            %}
             <button popovertarget="zones" class="button-zones">
                 <svg class="decorative" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M25 0C11.25 0 0 11.25 0 25C0 38.75 11.25 50 25 50C38.75 50 50 38.75 50 25C50 11.25 38.75 0 25 0ZM34.25 30.75C35.25 31.75 35.25 33.25 34.25 34.25C33.25 35.25 31.75 35.25 30.75 34.25L25 28.5L19.25 34.25C18.25 35.25 16.75 35.25 15.75 34.25C14.75 33.25 14.75 31.75 15.75 30.75L21.5 25L15.75 19.25C14.75 18.25 14.75 16.75 15.75 15.75C16.75 14.75 18.25 14.75 19.25 15.75L25 21.5L30.75 15.75C31.75 14.75 33.25 14.75 34.25 15.75C35.25 16.75 35.25 18.25 34.25 19.25L28.5 25L34.25 30.75Z" fill="#3C3C3C"/>

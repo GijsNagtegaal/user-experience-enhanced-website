@@ -16,10 +16,14 @@
                                 </g>
                             </svg>
                         </div>
-                        <hgroup class="headingwrapper">
-                            <h3>Opdracht {{ plant.quest.id }}</h3>
+                        <article class="headingwrapper">
+                            {% assign content = "Opdracht " | append: plant.quest.id %}
+                            {% render 'partials/general-heading.liquid',
+                                heading_level: 3,
+                                content: content
+                            %}
                             <p>+{{ plant.quest.xp | default: 25 }}xp</p>
-                        </hgroup>
+                        </article>
                     </article>
                     <p>{{ plant.quest.description | truncatewords: 10 }}</p>
                 </section>
