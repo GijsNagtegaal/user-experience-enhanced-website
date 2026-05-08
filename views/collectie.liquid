@@ -1,17 +1,25 @@
 {% render 'partials/head.liquid', user: user %}
 <main class="collectie">
     <nav>
-        <a href="/collectie/in_bloom" class="filter-btn {% if current_path == '/collectie/in_bloom' %}active{% endif %}">
-            In Bloei
-        </a>
+        {% capture if_class %}
+            {% if current_path == '/collectie/in_bloom' %}active{% endif %}
+        {% endcapture %}
         {% render 'partials/link.liquid',
+            href: "/collectie/in_bloom",
             standard_class: "filter-btn",
             if_class: if_class,
             content: "In Bloei",
         %}
-        <a href="/collectie/not_in_bloom" class="filter-btn {% if current_path == '/collectie/not_in_bloom' %}active{% endif %}">
-            Niet in Bloei
-        </a>
+
+        {% capture if_class %}
+            {% if current_path == '/collectie/not_in_bloom' %}active{% endif %}
+        {% endcapture %}
+        {% render 'partials/link.liquid',
+            href: "/collectie/not_in_bloom",
+            standard_class: "filter-btn",
+            if_class: if_class,
+            content: "Niet in Bloei",
+        %}
     </nav>
     
     <section id="plant-list">

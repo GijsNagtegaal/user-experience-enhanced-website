@@ -191,7 +191,11 @@
             <button class="styled reset">Voortgang wissen</button>
         </form>
 
-        <a class="styled logout" href="/logout">Uitloggen</a>
+        {% render 'partials/link.liquid',
+            href: "/logout",
+            standard_class: "styled logout",
+            content: "Uitloggen",
+        %}
 
     </section>
 </main>

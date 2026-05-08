@@ -65,7 +65,11 @@
                     </svg>
                 </article>
                 <p>Ga naar deze zone en klik op onderstaande knop om verder te gaan</p>
-                <a href="?step=start" class="styled quest start">Ik ben er! - begin de opdracht</a>
+                {% render 'partials/link.liquid',
+                    href: "/?step=start",
+                    standard_class: "styled quest start",
+                    content: "Ik ben er! - begin de opdracht",
+                %}
             </section>
 
         {% when 'start' %}
@@ -107,13 +111,19 @@
                     {% endfor %}
                     {% else %}
                         <p>Deze opdracht heeft nog geen opties.</p>
-                        <a href="?step=incorrect" class="styled awnser">Ga terug</a>
+                        {% render 'partials/link.liquid',
+                            href: "?step=incorrect",
+                            standard_class: "styled awnser",
+                            content: "Ga terug",
+                        %}
                     {% endif %}
                 </article>
 
-                <a href="#" class="styled loader">
-                    Ik weet het heel zeker
-                </a>
+                {% render 'partials/link.liquid',
+                    href: "#",
+                    standard_class: "styled loader",
+                    content: "Ik weet het heel zeker",
+                %}
 
             </section>
         {% when 'correct' %}

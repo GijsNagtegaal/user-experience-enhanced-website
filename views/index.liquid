@@ -42,7 +42,14 @@
                 content: "Mijn Collectie",
             %}  
         </div>
-        <p>Hier vind je jouw meest recent verzamelde planten. Liever jouw hele collectie zien? Dat kan <a href="/collectie/in_bloom">hier</a></p>
+        <p>Hier vind je jouw meest recent verzamelde planten. Liever jouw hele collectie zien? 
+            Dat kan      
+            {% render 'partials/link.liquid',
+                href: "/collection/in_bloom",
+                content: "hier",
+            %}
+        </p>
+
         {% render 'partials/mycollection.liquid', 
             plants: plants, 
             zone_type: zone_type, 
@@ -69,7 +76,11 @@
             fetch: "auto",
             loading: "lazy",
         %}
-        <a class="styled secondary margin" href="/veldverkenner">Naar onze veldverkenner</a>
+        {% render 'partials/link.liquid',
+            href: "/veldverkenner",
+            standard_class: "styled secondary margin",
+            content: "Naar onze veldverkenner",
+        %}
     </section>
     {% comment %} section with news overview {% endcomment %}
     <section>
