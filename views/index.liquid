@@ -24,13 +24,13 @@
 </header>
 
 <main class="home">
-    {% if age < 28 %}
+    {% comment %} {% if age < 28 %}
         <p>hoi ik ben jong</p>
         <p>want ik ben {{ age }}</p>
     {% else %}
         <p>hoi ik ben oud</p>
         <p>want ik ben {{ age }}</p>
-    {% endif %}
+    {% endif %} {% endcomment %}
     {% comment %} section with all of the users collected plants {% endcomment %}
     <section>
         <div class="textwrapper">

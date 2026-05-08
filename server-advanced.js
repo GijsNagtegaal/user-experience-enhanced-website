@@ -18,7 +18,7 @@ const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const engine = new Liquid();
-app.engine('liquid', engine.express());
+app.engine('liquid', engine.express());b
 app.set('views', './views').set('view engine', 'liquid');
 
 app.use(cookieParser());
@@ -66,4 +66,4 @@ app.use(collectionRoutes);
 app.use(accountRoutes);
 app.use(newsRoutes);
 
-app.listen(8000, () => console.log('🚀 1:1 Modular Server Started: http://localhost:8000'));
+app.listen(8000, () => console.log('Server Started: http://localhost:8000'));

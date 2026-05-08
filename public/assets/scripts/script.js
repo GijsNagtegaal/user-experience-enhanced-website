@@ -1,13 +1,6 @@
-/* 
-    GENERAL UI & NAVIGATION LOGIC 
-*/
-
 const loaderBtn = document.querySelector('.loader');
 const allOptions = document.querySelectorAll('.options-container button');
 
-/**
- * Trigger Global Loader Animation
- */
 const triggerAnimation = (event) => {
     const clickedBtn = event.currentTarget;
     const targetUrl = clickedBtn.getAttribute('data-url');
@@ -15,7 +8,7 @@ const triggerAnimation = (event) => {
     if (loaderBtn) {
         loaderBtn.setAttribute('href', targetUrl);
         loaderBtn.classList.remove('shownow', 'ready');
-        void loaderBtn.offsetWidth; // Force reflow
+        void loaderBtn.offsetWidth;
         loaderBtn.classList.add('shownow');
     }
 };
@@ -24,9 +17,6 @@ allOptions.forEach(btn => {
     btn.addEventListener('click', triggerAnimation);
 });
 
-/**
- * Memoji Selection & Async Form Patching
- */
 const memojiForm = document.getElementById('memojiForm');
 
 if (memojiForm) {
