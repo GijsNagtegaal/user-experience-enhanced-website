@@ -13,3 +13,8 @@
 {% if birth_md > current_md %}
     {% assign age = age | minus: 1 %}
 {% endif %}
+
+{% if age >= "28" %}
+    {% assign collection_type = "xp" %}
+{% endif %}
+

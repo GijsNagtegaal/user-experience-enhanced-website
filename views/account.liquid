@@ -148,6 +148,12 @@
         </article>
     </section>
 
+    {% if collection_type == "xp" %} 
+        <p>Ik wil xp verzamelen</p>
+    {% else %}
+        <p>Ik wil puntjes verzamelen</p>
+    {% endif %}
+    
     <section class="progress">
         {% assign progress = "Nog " | append: user.xp | append: "xp tot level 3" %}
 
